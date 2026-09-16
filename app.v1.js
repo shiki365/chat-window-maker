@@ -219,10 +219,20 @@
     return list.map(([value, text]) => `<option value="${esc(value)}">${esc(text)}</option>`).join("");
   }
 
+  // Shown in the OBS tab and above the CSS buttons: pasting the room URL itself shows the whole room in OBS.
   function updateChatUrl() {
     const url = M.chatUrl(state.source.room);
     $("#chatUrl").value = url;
     $("#copyUrl").disabled = !url;
+    $("#chatUrlMain").value = url;
+    $("#sourceUrlSet").hidden = !url;
+    $("#sourceUrlMissing").hidden = !!url;
+  }
+
+  function copyChatUrl() {
+    const url = M.chatUrl(state.source.room);
+    if (!url) return;
+    copyText(url).then(ok => status(ok ? "URL をコピーしました。OBS のブラウザソースの URL に貼り付けてください。" : "コピーできませんでした。", !ok));
   }
 
   // ---------------------------------------------------------------- preview
@@ -297,7 +307,8 @@
   function copyCss() {
     copyText(currentCss()).then(ok => {
       if (!ok) { status("コピーできませんでした。下の「書き出す CSS を見る」から選んでコピーしてください。", true); return; }
-      status(`CSS をコピーしました。OBS のブラウザソース（幅 ${state.source.w} × 高さ ${state.source.h}）のカスタム CSS に貼り付けてください。`);
+      const urlNote = M.chatUrl(state.source.room) ? "" : "ブラウザソースの URL は、末尾が /chat のチャット画面のものにしてください。";
+      status(`CSS をコピーしました。OBS のブラウザソース（幅 ${state.source.w} × 高さ ${state.source.h}）のカスタム CSS に貼り付けてください。${urlNote}`);
     });
   }
 
@@ -485,10 +496,13 @@
 
     $("#copyCss").addEventListener("click", copyCss);
     $("#downloadCss").addEventListener("click", downloadCss);
-    $("#copyUrl").addEventListener("click", () => {
-      const url = M.chatUrl(state.source.room);
-      if (!url) return;
-      copyText(url).then(ok => status(ok ? "URL をコピーしました。OBS のブラウザソースの URL に貼り付けてください。" : "コピーできませんでした。", !ok));
+    $("#copyUrl").addEventListener("click", copyChatUrl);
+    $("#copyUrlMain").addEventListener("click", copyChatUrl);
+    $("#gotoRoom").addEventListener("click", () => {
+      switchTab("obs");
+      const input = $('[data-bind="source.room"]');
+      input.scrollIntoView({ block: "center" });
+      input.focus();
     });
 
     $("#saveProject").addEventListener("click", saveProject);

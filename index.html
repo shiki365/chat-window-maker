@@ -109,8 +109,10 @@
   .size-note { color: var(--fg); font-size: 13px; }
   .size-note b { font-size: 15px; }
 
-  .tester { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
-  .tester h2 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .tester, .source-url { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+  .tester h2, .source-url h2 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .source-url .missing { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .source-url .warn { color: #ffb86b; font-size: 12px; line-height: 1.7; }
   .custom { display: grid; grid-template-columns: 130px 110px minmax(0, 1fr); gap: 6px; align-items: center; }
   .custom input[type=text] { width: 100%; }
   @media (max-width: 560px) { .custom { grid-template-columns: 1fr 1fr; } .custom .grow { grid-column: 1 / -1; } }
@@ -488,6 +490,18 @@
       </div>
     </div>
 
+    <div class="source-url">
+      <h2>OBS のブラウザソースに入れる URL（末尾が /chat のチャット画面。ルームの URL ではありません）</h2>
+      <span class="pair" id="sourceUrlSet" style="grid-template-columns: 1fr auto;">
+        <input type="text" id="chatUrlMain" readonly aria-label="ブラウザソースに入れるURL">
+        <button type="button" class="small" id="copyUrlMain">URL をコピー</button>
+      </span>
+      <div class="missing" id="sourceUrlMissing">
+        <span class="warn">ルームの URL をそのまま OBS に入れると、ルームの画面（背景や駒）が丸ごと映ります。ルームの URL を入れると、ここに OBS 用の URL が出ます。</span>
+        <button type="button" class="small" id="gotoRoom">ルームの URL を入れる</button>
+      </div>
+    </div>
+
     <div class="bar">
       <input type="text" data-bind="fileBase" aria-label="ファイル名" placeholder="ファイル名">
       <span class="spacer"></span>
@@ -504,12 +518,17 @@
     <div class="note">
       <h2>OBS での設定</h2>
       <ol>
-        <li>ソースを追加 →「ブラウザ」。URL にチャット画面の URL を入れます：<br><code>https://ccfolia.com/rooms/{ルームID}/chat</code></li>
+        <li>ソースを追加 →「ブラウザ」。URL にチャット画面の URL（<b>末尾が /chat</b>）を入れます：<br><code>https://ccfolia.com/rooms/{ルームID}/chat</code><br>ブラウザのアドレス欄にあるルームの URL ではありません。上の「OBS のブラウザソースに入れる URL」からコピーできます。</li>
         <li>幅と高さに、上に出ている <b>ブラウザソースの大きさ</b> を入れます。</li>
         <li>「カスタム CSS」の中身を全部消して、コピーした CSS を貼り付けます。</li>
-        <li>何も映らないときや秘匿タブを映すときは、ココフォリアへのログインが必要です。いったん URL を <code>https://ccfolia.com/</code> にして、ソースを右クリック →「対話」でログインしてから、URL を元に戻します（1 回やれば覚えています）。</li>
+        <li>何も映らないときや秘匿タブを映すときは、ココフォリアへのログインが必要です。いったん URL を <code>https://ccfolia.com/</code> にして、ソースを右クリック →「対話」でログインしてから、URL を元に戻します（1 回やれば覚えています）。<b>「対話」ではログインだけして、ルームには入らないでください。</b></li>
         <li>メイン以外のタブは、「対話」を開いて窓にマウスを乗せ、出てきたタブから選びます。<b>タブの選択は保存されない</b>ので、OBS を起動し直したら選び直してください。</li>
       </ol>
+      <h2>うまく映らないとき</h2>
+      <ul>
+        <li><b>ルームの背景・スクリーンパネル・駒・拡大縮小のボタンまで映る</b> → チャット画面ではなく、ルームの画面を開いています。ソースのプロパティで、URL の末尾が <code>/chat</code> になっているか確かめてください。「対話」の中でルームに入ってしまったときは、URL をいったん <code>https://ccfolia.com/</code> にして OK → チャット画面の URL に戻して OK で直ります。</li>
+        <li><b>何も映らない</b> → ココフォリアへのログインが必要です（上の手順 4）。</li>
+      </ul>
       <h2>ダイス用と秘匿チャット用を両方出すとき</h2>
       <ul>
         <li>ソースを右クリック →「コピー」→「<b>複製を貼り付け</b>」で 2 つ目を作り、それぞれにこのツールで作った CSS を入れます。秘匿チャット用のほうだけ、「対話」で秘匿タブを選びます。</li>
@@ -534,14 +553,14 @@
   ブラウザだけで動く無料ツールです。作った CSS は自由に使えます。<br>
   ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。<br>
   <a href="https://shiki365.github.io/">ほかのツールも見る（shiki365 のツール置き場）</a> ・ <a href="https://shiki365.github.io/#contact">不具合の報告・感想</a> ・ <a href="https://marshmallow-qa.com/jisg2c3imbza76d">ほしいツールの要望（マシュマロ）</a><br>
-  v1.1 ・ 最終更新 2026-09-17
+  v1.2 ・ 最終更新 2026-09-17
 </footer>
 
 <script src="presets.v1.js?v=2"></script>
 <script src="model.v1.js?v=1"></script>
-<script src="css.v1.js?v=2"></script>
+<script src="css.v1.js?v=3"></script>
 <script src="mock.v1.js?v=1"></script>
 <script src="pcfonts.v1.js?v=1"></script>
-<script src="app.v1.js?v=1"></script>
+<script src="app.v1.js?v=2"></script>
 </body>
 </html>
