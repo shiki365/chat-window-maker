@@ -47,6 +47,7 @@
   .row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: center; margin-top: 10px; }
   .row > label { color: var(--muted); }
   .row.wide { grid-template-columns: 1fr; }
+  .row.sub > label { padding-left: 12px; }
   .with-value { display: grid; grid-template-columns: minmax(0, 1fr) 52px; gap: 8px; align-items: center; }
   .with-value output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
   .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center; }
@@ -216,6 +217,8 @@
           <div class="row" data-show="title.source=text|textTab"><label>文字</label><input type="text" data-bind="title.text" placeholder="例: DICE ROLL"></div>
           <div class="row"><label>見た目</label><select data-bind="title.style" data-options="TITLE_STYLES"></select></div>
           <div class="row"><label>フォント</label><select data-bind="title.font" data-options="FONTS"></select></div>
+          <div class="row sub" data-show="title.font=pc"><label>フォント名</label><span class="pc-font">
+            <input type="text" data-bind="title.fontName" placeholder="例）BIZ UDPGothic" aria-label="見出しのフォント名" autocomplete="off" spellcheck="false"><button type="button" class="small" data-pc-fonts>一覧から選ぶ</button></span></div>
           <div class="row"><label>太さ</label><select data-bind="title.weight" data-options="WEIGHTS" data-number></select></div>
           <div class="row"><label>大きさ</label>
             <span class="with-value"><input type="range" data-bind="title.size" min="10" max="40" step="1"><output data-out="title.size" data-fmt="px"></output></span></div>
@@ -306,6 +309,8 @@
         <div data-show="name.show=true">
           <div class="row"><label>見た目</label><select data-bind="name.style" data-options="NAME_STYLES"></select></div>
           <div class="row"><label>フォント</label><select data-bind="name.font" data-options="FONTS"></select></div>
+          <div class="row sub" data-show="name.font=pc"><label>フォント名</label><span class="pc-font">
+            <input type="text" data-bind="name.fontName" placeholder="例）BIZ UDPGothic" aria-label="名前のフォント名" autocomplete="off" spellcheck="false"><button type="button" class="small" data-pc-fonts>一覧から選ぶ</button></span></div>
           <div class="row"><label>太さ</label><select data-bind="name.weight" data-options="WEIGHTS" data-number></select></div>
           <div class="row"><label>大きさ</label>
             <span class="with-value"><input type="range" data-bind="name.size" min="8" max="40" step="1"><output data-out="name.size" data-fmt="px"></output></span></div>
@@ -326,6 +331,8 @@
       <fieldset>
         <legend>本文</legend>
         <div class="row"><label>フォント</label><select data-bind="text.font" data-options="FONTS"></select></div>
+        <div class="row sub" data-show="text.font=pc"><label>フォント名</label><span class="pc-font">
+          <input type="text" data-bind="text.fontName" placeholder="例）BIZ UDPGothic" aria-label="本文のフォント名" autocomplete="off" spellcheck="false"><button type="button" class="small" data-pc-fonts>一覧から選ぶ</button></span></div>
         <div class="row"><label>太さ</label><select data-bind="text.weight" data-options="WEIGHTS" data-number></select></div>
         <div class="row"><label>大きさ</label>
           <span class="with-value"><input type="range" data-bind="text.size" min="8" max="48" step="1"><output data-out="text.size" data-fmt="px"></output></span></div>
@@ -342,11 +349,14 @@
         <div class="row" data-show="text.outline=stroke"><label>ふちの太さ</label>
           <span class="with-value"><input type="range" data-bind="text.outlineW" min="1" max="5" step="0.5"><output data-out="text.outlineW" data-fmt="px"></output></span></div>
         <p class="desc">「長い文」を 1 以上にすると、その行数より長いメッセージは「…」で切ります。ふちどりは名前とダイスの結果にもかかります。</p>
+        <p class="desc" data-show="title.font=pc|name.font=pc|text.font=pc|result.font=pc">「名前で指定（PCのフォント）」では、この PC に入れたフォントが使えます。<b>OBS を動かす PC にも同じフォントが入っている必要があります。</b></p>
       </fieldset>
 
       <fieldset>
         <legend>ダイスの結果</legend>
         <div class="row"><label>フォント</label><select data-bind="result.font" data-options="FONTS"></select></div>
+        <div class="row sub" data-show="result.font=pc"><label>フォント名</label><span class="pc-font">
+          <input type="text" data-bind="result.fontName" placeholder="例）BIZ UDPGothic" aria-label="ダイスの結果のフォント名" autocomplete="off" spellcheck="false"><button type="button" class="small" data-pc-fonts>一覧から選ぶ</button></span></div>
         <div class="row"><label>太さ</label><select data-bind="result.weight" data-options="WEIGHTS" data-number></select></div>
         <div class="row"><label>大きさ</label>
           <span class="with-value"><input type="range" data-bind="result.size" min="8" max="64" step="1"><output data-out="result.size" data-fmt="px"></output></span></div>
@@ -506,6 +516,12 @@
         <li>秘匿タブは、そのタブに参加しているアカウント（GM など）でログインしたときだけ見えます。</li>
         <li>ブラウザソースの設定で「表示されていないときにソースをシャットダウン」「シーンがアクティブになったときにブラウザの表示を更新」をオンにすると、切り替えのたびにタブがメインに戻ります。</li>
       </ul>
+      <h2>PC に入れたフォントを使うとき</h2>
+      <ul>
+        <li>フォント欄で「名前で指定（PCのフォント）」を選び、フォント名を入れます。Chrome / Edge では「一覧から選ぶ」で、PC に入っているフォントを見た目で選べます（初回はフォントの使用の許可を聞かれます）。</li>
+        <li>OBS は自分の PC のフォントで表示するので、<b>OBS を動かす PC にも同じフォントを入れてください</b>。入っていないと、ふつうのゴシック体になります。</li>
+        <li>漢字が入っていないフォントでは、漢字の部分だけふつうのゴシック体になります（一覧の見本の「永」で確かめられます）。</li>
+      </ul>
       <h2>このツールについて</h2>
       <p style="margin: 0">マシュマロでいただいた「ダイスウィンドウや秘匿チャットを、プレビューで確かめながらカスタマイズしたい」という声から作りました。「こんなツールがほしい」「ここが使いにくい」といった声も、<a href="https://marshmallow-qa.com/jisg2c3imbza76d">マシュマロ</a>からお気軽にどうぞ。</p>
     </div>
@@ -518,13 +534,14 @@
   ブラウザだけで動く無料ツールです。作った CSS は自由に使えます。<br>
   ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。<br>
   <a href="https://shiki365.github.io/">ほかのツールも見る（shiki365 のツール置き場）</a> ・ <a href="https://shiki365.github.io/#contact">不具合の報告・感想</a> ・ <a href="https://marshmallow-qa.com/jisg2c3imbza76d">ほしいツールの要望（マシュマロ）</a><br>
-  v1.0 ・ 最終更新 2026-09-16
+  v1.1 ・ 最終更新 2026-09-17
 </footer>
 
-<script src="presets.v1.js?v=1"></script>
+<script src="presets.v1.js?v=2"></script>
 <script src="model.v1.js?v=1"></script>
-<script src="css.v1.js?v=1"></script>
+<script src="css.v1.js?v=2"></script>
 <script src="mock.v1.js?v=1"></script>
+<script src="pcfonts.v1.js?v=1"></script>
 <script src="app.v1.js?v=1"></script>
 </body>
 </html>

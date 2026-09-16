@@ -2,7 +2,8 @@
  * presets.v1.js - static data: fonts, option lists, design templates, sample messages
  *
  * Adding things:
- *   - a font:    add an entry to FONTS (weights must exist on Google Fonts, or the whole import fails)
+ *   - a font:    add an entry to FONTS (weights must exist on Google Fonts, or the whole import fails).
+ *                The "pc" entry is special: its family is the name the user typed.
  *   - a design:  add an entry to DESIGNS; it is merged over BASE_LOOK
  */
 (function () {
@@ -54,6 +55,8 @@
     yugothic: { label: "游ゴシック（PCのフォント）", family: "Yu Gothic UI", weights: null, stack: SANS },
     meiryo: { label: "メイリオ（PCのフォント）", family: "Meiryo", weights: null, stack: SANS },
     yumincho: { label: "游明朝（PCのフォント）", family: "Yu Mincho", weights: null, stack: SERIF },
+    // family comes from the typed name (title.fontName etc.)
+    pc: { label: "名前で指定（PCのフォント）", family: "", weights: null, stack: SANS },
   };
 
   const WEIGHTS = [[400, "標準"], [500, "やや太"], [600, "中太"], [700, "太"], [800, "極太"], [900, "最太"]];
@@ -94,7 +97,7 @@
   const BASE_LOOK = {
     panel: { mode: "fit", anchor: "bottom", margin: 10, pad: 10, bg: "#0c0e14", bgAlpha: 0.7, borderW: 1, borderColor: "#ffffff", borderAlpha: 0.14,
       radius: 10, shadow: 0.35, texture: "none", corners: false, cornerColor: "#ffffff", cornerAlpha: 0.8 },
-    title: { source: "none", text: "DICE", style: "text", font: "notosans", weight: 700, size: 14, color: "#f2efe6", accent: "#c8a45c",
+    title: { source: "none", text: "DICE", style: "text", font: "notosans", fontName: "", weight: 700, size: 14, color: "#f2efe6", accent: "#c8a45c",
       bg: "#000000", bgAlpha: 0.45, align: "left", gap: 8, lock: true },
     list: { count: 5, order: "newBottom", diceOnly: false, hideSystem: true, gap: 6 },
     // Icons of the users in a private tab (CCFOLIA shows them in the chat header).
@@ -102,11 +105,11 @@
     card: { style: "card", bg: "#000000", bgAlpha: 0.35, borderW: 0, borderColor: "#ffffff", borderAlpha: 0.2, radius: 8, padX: 10, padY: 8,
       shadow: 0, accent: "none", accentColor: "#c8a45c", accentW: 3, divider: false, dividerColor: "#ffffff", dividerAlpha: 0.15, resultBorder: false },
     avatar: { show: true, size: 36, shape: "rounded", borderW: 0, borderColor: "#ffffff", borderAlpha: 0.5, gap: 10, align: "top" },
-    name: { show: true, font: "notosans", weight: 700, size: 13, colorMode: "char", color: "#f2efe6", style: "text",
+    name: { show: true, font: "notosans", fontName: "", weight: 700, size: 13, colorMode: "char", color: "#f2efe6", style: "text",
       time: false, timeColor: "#ffffff", timeAlpha: 0.5, gap: 2 },
-    text: { font: "notosans", weight: 400, size: 15, color: "#f2efe6", lineHeight: 1.55, spacing: 0.02,
+    text: { font: "notosans", fontName: "", weight: 400, size: 15, color: "#f2efe6", lineHeight: 1.55, spacing: 0.02,
       outline: "shadow", outlineColor: "#000000", outlineAlpha: 0.8, outlineW: 2, clamp: 0 },
-    result: { font: "notosans", weight: 700, size: 16, newLine: true, style: "text",
+    result: { font: "notosans", fontName: "", weight: 700, size: 16, newLine: true, style: "text",
       success: "#5cc8ff", failure: "#ff5c7a", neutral: "#e8e4da", glow: false, flash: false },
     motion: { enter: "slideUp", enterDur: 0.35, exit: false, exitAfter: 12, exitDur: 0.6 },
   };
