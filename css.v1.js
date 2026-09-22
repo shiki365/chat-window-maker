@@ -23,7 +23,9 @@
  *
  * Showing "the latest N": every message but the last N is display:none. The virtualizer then
  * measures those as 0px, so its visible range always reaches the newest message (N <= 30 < overscan 50).
- * The list is not scrolled at all; flex alignment decides which side overflows.
+ * The list must not scroll, so flex alignment alone decides which side overflows: it gets
+ * overflow: clip, not hidden. CCFOLIA scrolls the list to the newest message, and a hidden box
+ * keeps that scroll offset, which hid the start of any message taller than the window.
  *
  * Every declaration gets !important, except properties that animations move (an !important
  * declaration wins over the animation). Those are only set on div[data-index], which the page
@@ -227,7 +229,9 @@
     w.add(SEL.list, {
       // The virtualizer renders nothing while the list is 0px tall (and then it never grows), so keep 1px.
       flex: A.mode === "fit" ? "0 1 auto" : "1 1 auto", "min-height": "1px", height: "auto", width: "auto",
-      margin: "0", padding: "0", overflow: "hidden", display: "flex", "flex-direction": "column",
+      // clip, not hidden: a hidden box stays scrolled to the newest message and cuts off the top
+      // of a message taller than the window (Chromium 90 and later, so OBS 30 too).
+      margin: "0", padding: "0", overflow: "clip", display: "flex", "flex-direction": "column",
       // The old side overflows and gets cut off: the top when new messages come at the bottom.
       "justify-content": newBottom ? "flex-end" : "flex-start",
       background: "transparent", "scrollbar-width": "none", position: "relative", "z-index": "1",
