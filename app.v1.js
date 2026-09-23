@@ -131,6 +131,13 @@
       syncControls();
     } else if (path === "source.room") {
       updateChatUrl();
+    } else if (path === "motion.scroll" && state.motion.scroll) {
+      // Scrolling needs one message in a window that fills the source.
+      const changed = state.list.count !== 1 || state.panel.mode !== "fixed";
+      state.list.count = 1;
+      state.panel.mode = "fixed";
+      syncControls();
+      if (changed) status("長い本文を流すため、映す件数を 1 件、窓を「ソースいっぱいの窓」にしました。");
     }
     updateVisibility();
     updateOutputs();

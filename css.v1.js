@@ -182,7 +182,7 @@
   // ---------------------------------------------------------------- parts
 
   function panelRules(st, w) {
-    const L = st.panel, M = px(L.margin), fit = L.mode === "fit";
+    const L = st.panel, M = px(L.margin), fit = L.mode === "fit" && !scrolls(st);
     const images = [], sizes = [];
     if (L.texture === "paper") {
       images.push("radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.22), transparent 60%)",
@@ -225,20 +225,24 @@
 
   function listRules(st, w) {
     const L = st.list, A = st.panel, newBottom = L.order === "newBottom";
+    const scroll = scrolls(st), fit = A.mode === "fit" && !scroll;
     w.comment("メッセージの並び（最新の件数だけ残す）");
     w.add(SEL.list, {
       // The virtualizer renders nothing while the list is 0px tall (and then it never grows), so keep 1px.
-      flex: A.mode === "fit" ? "0 1 auto" : "1 1 auto", "min-height": "1px", height: "auto", width: "auto",
+      flex: fit ? "0 1 auto" : "1 1 auto", "min-height": "1px", height: "auto", width: "auto",
       // clip, not hidden: a hidden box stays scrolled to the newest message and cuts off the top
       // of a message taller than the window (Chromium 90 and later, so OBS 30 too).
       margin: "0", padding: "0", overflow: "clip", display: "flex", "flex-direction": "column",
       // The old side overflows and gets cut off: the top when new messages come at the bottom.
-      "justify-content": newBottom ? "flex-end" : "flex-start",
+      // A scrolling message starts from its top, whatever the order (there is only one).
+      "justify-content": newBottom && !scroll ? "flex-end" : "flex-start",
+      // Lets the message measure the window with cqh units (Chromium 105 and later, so OBS 31).
+      "container-type": scroll ? "size" : undefined,
       background: "transparent", "scrollbar-width": "none", position: "relative", "z-index": "1",
     });
     w.add(`${SEL.list} > :not(div)`, { display: "none" });
     // An auto margin only takes free space, so it moves short content without changing which side overflows.
-    const auto = newBottom ? (A.anchor === "top" ? { "margin-bottom": "auto" } : {}) : (A.anchor === "bottom" ? { "margin-top": "auto" } : {});
+    const auto = scroll ? {} : newBottom ? (A.anchor === "top" ? { "margin-bottom": "auto" } : {}) : (A.anchor === "bottom" ? { "margin-top": "auto" } : {});
     w.add(SEL.outer, Object.assign({ height: "auto", width: "100%", position: "relative", flex: "none", margin: "0" }, auto));
     w.add(SEL.inner, {
       position: "static", transform: "none", width: "100%", height: "auto", display: "flex",
@@ -547,19 +551,31 @@
     blur: "from { opacity: 0; filter: blur(8px); }",
   };
 
+  // Scrolling a long message only works with one message on screen: with more, it would slide over the others.
+  const scrolls = st => !!st.motion.scroll && Math.round(st.list.count) === 1;
+
   function motionRules(st, w, keyframe) {
-    const MO = st.motion, list = [];
+    const MO = st.motion, list = [], scroll = scrolls(st);
+    // "Fade out after N s" counts from the end of the scroll, so a long message is not cut off halfway.
+    const exitAt = MO.exitAfter + (scroll ? MO.scrollWait + MO.scrollDur : 0);
     if (MO.enter !== "none" && ENTER_FRAMES[MO.enter]) {
       list.push(`cw-in-${MO.enter} ${round(MO.enterDur)}s ease-out both`);
       keyframe(`cw-in-${MO.enter}`, ENTER_FRAMES[MO.enter]);
     }
+    if (scroll) {
+      w.comment(`長い本文をゆっくり流す（${round(MO.scrollWait, 10)}秒待ってから${round(MO.scrollDur, 10)}秒で。OBS 31 以降）`);
+      // Moves by (window height - message height), never down: 100cqh is the list, 100% the message itself.
+      // It runs on the item inside the entry, so it does not fight the entry's own animations over transform.
+      keyframe("cw-scroll", "from { transform: translateY(0); } to { transform: translateY(min(0px, calc(100cqh - 100%))); }");
+      w.add(E + PART.item, { animation: `cw-scroll ${round(MO.scrollDur, 10)}s linear ${round(MO.scrollWait, 10)}s forwards` }, ["animation"]);
+    }
     if (MO.exit) {
-      list.push(`cw-out ${round(MO.exitDur)}s ease-in ${round(MO.exitAfter, 10)}s forwards`);
+      list.push(`cw-out ${round(MO.exitDur)}s ease-in ${round(exitAt, 10)}s forwards`);
       // Fades first, then gives its space back to the other messages.
       keyframe("cw-out", `0% { opacity: 1; max-height: 1200px; } 75% { opacity: 0; max-height: 1200px; margin-top: ${px(st.list.gap)}; } 100% { opacity: 0; max-height: 0; margin-top: 0; visibility: hidden; }`);
     }
     if (!list.length) return;
-    w.comment(MO.exit ? `出るときの動き / ${round(MO.exitAfter, 10)}秒で消える` : "出るときの動き");
+    w.comment(MO.exit ? `出るときの動き / ${round(exitAt, 10)}秒で消える` : "出るときの動き");
     w.add(E, { animation: list.join(", "), "transform-origin": "center center" }, ["animation", "transform-origin"]);
   }
 
@@ -592,6 +608,7 @@
       "       ソースを右クリック →「対話」→ 窓にマウスを乗せるとタブが出るので、映したいタブを選ぶ。",
       "       タブの選択は保存されないので、OBS を起動し直したら選び直してください。",
       ...(needs31 ? ["   ■ ダイスだけ表示・成否の色分けは OBS 31 以降で動きます。"] : []),
+      ...(scrolls(st) ? ["   ■ 長い本文をゆっくり流すのは OBS 31 以降で動きます（古い OBS では先頭が出たまま止まります）。"] : []),
       ...pcFontNote(uses),
       "   ========================================================================== */",
     ].join("\n"));

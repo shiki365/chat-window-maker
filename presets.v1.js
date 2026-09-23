@@ -111,7 +111,7 @@
       outline: "shadow", outlineColor: "#000000", outlineAlpha: 0.8, outlineW: 2, clamp: 0 },
     result: { font: "notosans", fontName: "", weight: 700, size: 16, newLine: true, style: "text",
       success: "#5cc8ff", failure: "#ff5c7a", neutral: "#e8e4da", glow: false, flash: false },
-    motion: { enter: "slideUp", enterDur: 0.35, exit: false, exitAfter: 12, exitDur: 0.6 },
+    motion: { enter: "slideUp", enterDur: 0.35, exit: false, exitAfter: 12, exitDur: 0.6, scroll: false, scrollWait: 2, scrollDur: 30 },
   };
 
   const DESIGNS = {
