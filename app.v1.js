@@ -69,7 +69,7 @@
 
   const KIND_LABEL = {
     chat: "チャット", success: "ダイス（成功）", failure: "ダイス（失敗）", neutral: "ダイス（成否なし）",
-    secret: "ほかの人のシークレットダイス", system: "システムメッセージ",
+    secret: "ほかの人のシークレットダイス", system: "システムメッセージ", long: "長文",
   };
 
   // Say why a sent message stays hidden, so an active filter is not taken for a broken button.
@@ -79,6 +79,7 @@
     const where = "（「窓・見出し」タブの「映すメッセージ」で切り替えられます）";
     if (state.list.diceOnly && !dice) status(`${label}を送りました。「ダイスの結果だけ」がオンなので、窓には出ません${where}`);
     else if (kind === "system" && state.list.hideSystem) status(`${label}を送りました。「システムメッセージを除く」がオンなので、窓には出ません${where}`);
+    else if (kind === "long" && !state.motion.scroll) status(`${label}を送りました。窓に収まらない本文は、「動き・消す」タブの「長い本文をゆっくり流す」で流せます。`);
     else status(`${label}を送りました。`);
   }
 
