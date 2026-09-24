@@ -275,7 +275,7 @@
 
     w.comment("1件ぶんの箱");
     w.add(ITEM, Object.assign({
-      display: "flex", "align-items": AV.align === "center" ? "center" : "flex-start", gap: AV.show ? px(AV.gap) : "0",
+      display: "flex", "align-items": AV.align === "center" && !scrolls(st) ? "center" : "flex-start", gap: AV.show ? px(AV.gap) : "0",
       width: "100%", margin: "0", "box-sizing": "border-box", position: "relative", "min-height": "0", "text-align": "left",
       padding: bubble ? "0" : `${px(C.padY)} ${px(C.padX)} ${px(C.padY)} ${px(C.padX + (plain ? accentW + (accentW ? 6 : 0) : accentW))}`,
     }, bubble || plain ? { background: "transparent", border: "none", "border-radius": "0", "box-shadow": "none" } : box));
@@ -311,8 +311,13 @@
     if (C.accent === "char") {
       // The name keeps the character color as `color` (its text is painted with -webkit-text-fill-color),
       // so a pseudo-element of the name can draw a line in that color across the whole box.
+      // A scrolling text column has a transform, so it becomes the line's containing block instead of
+      // the box: reach back over the box padding and the icon.
+      const shifted = scrollsText(st) && !bubble;
+      const padL = C.padX + (plain ? accentW + (accentW ? 6 : 0) : accentW);
       w.add(E + PART.name + "::before", {
-        content: '""', position: "absolute", left: "0", top: "0", bottom: "0", width: px(C.accentW),
+        content: '""', position: "absolute", width: px(C.accentW),
+        left: shifted ? px(-(padL + AV.size + AV.gap)) : "0", top: shifted ? px(-C.padY) : "0", bottom: shifted ? px(-C.padY) : "0",
         background: "currentColor", "border-radius": `${px(C.radius)} 0 0 ${px(C.radius)}`, "pointer-events": "none",
       });
     } else if (C.accent === "fixed" || C.accent === "result") {
@@ -553,6 +558,8 @@
 
   // Scrolling a long message only works with one message on screen: with more, it would slide over the others.
   const scrolls = st => !!st.motion.scroll && Math.round(st.list.count) === 1;
+  // With an icon, only the text column scrolls and the icon stays put.
+  const scrollsText = st => scrolls(st) && !!st.avatar.show;
 
   function motionRules(st, w, keyframe) {
     const MO = st.motion, list = [], scroll = scrolls(st);
@@ -564,10 +571,17 @@
     }
     if (scroll) {
       w.comment(`長い本文をゆっくり流す（${round(MO.scrollWait, 10)}秒待ってから${round(MO.scrollDur, 10)}秒で。OBS 31 以降）`);
-      // Moves by (window height - message height), never down: 100cqh is the list, 100% the message itself.
-      // It runs on the item inside the entry, so it does not fight the entry's own animations over transform.
-      keyframe("cw-scroll", "from { transform: translateY(0); } to { transform: translateY(min(0px, calc(100cqh - 100%))); }");
-      w.add(E + PART.item, { animation: `cw-scroll ${round(MO.scrollDur, 10)}s linear ${round(MO.scrollWait, 10)}s forwards` }, ["animation"]);
+      // Moves by (window height - message height), never down: 100cqh is the list, 100% the moving box itself.
+      // "both" keeps a transform during the wait too, so the containing block of the accent line never changes.
+      // It runs inside the entry, so it does not fight the entry's own animations over transform.
+      // With an icon only the text column moves, so the box padding and border around it are added back.
+      const C = st.card, text = scrollsText(st), bubble = C.style === "bubble";
+      const around = text && !bubble ? 2 * C.padY + (C.style === "card" && C.borderW > 0 ? 2 * C.borderW : 0) : 0;
+      const to = around ? `calc(100cqh - 100% - ${px(around)})` : "calc(100cqh - 100%)";
+      keyframe("cw-scroll", `from { transform: translateY(0); } to { transform: translateY(min(0px, ${to})); }`);
+      w.add(E + (text ? PART.textCol : PART.item), { animation: `cw-scroll ${round(MO.scrollDur, 10)}s linear ${round(MO.scrollWait, 10)}s both` }, ["animation"]);
+      // The text leaves through the top of its box, not over the box's border (a bubble is the moving box itself).
+      if (text && !bubble) w.add(E + PART.item, { "overflow-x": "visible", "overflow-y": "clip" });
     }
     if (MO.exit) {
       list.push(`cw-out ${round(MO.exitDur)}s ease-in ${round(exitAt, 10)}s forwards`);
