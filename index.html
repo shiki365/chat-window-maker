@@ -16,11 +16,13 @@
 <meta property="og:image:alt" content="チャットウィンドウメーカー － ココフォリアのダイスや秘匿チャットを、OBS に好きなデザインで">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
   :root {
     color-scheme: dark;
     --bg: #15161a; --panel: #1e1f26; --line: #303240; --line-soft: #282a36;
     --fg: #e7e7ea; --muted: #9a9aa5; --accent: #6b70ff;
+    --button: #575cf5; /* darker than --accent so white text passes 4.5:1 */
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -74,8 +76,8 @@
   button { background: #2f3140; color: var(--fg); border: 1px solid #464a5e;
            border-radius: 6px; padding: 7px 14px; font: inherit; cursor: pointer; }
   button:hover { background: #3a3d4f; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
-  button.primary:hover { background: #575cf5; }
+  button.primary { background: var(--button); border-color: var(--button); color: #fff; font-weight: 700; }
+  button.primary:hover { background: #4a4fe0; }
   button.small { padding: 4px 9px; font-size: 12px; }
   button.danger:hover { background: #5a2f36; border-color: #8a4a55; }
   button:disabled { opacity: .45; cursor: default; }
@@ -572,7 +574,7 @@
   ブラウザだけで動く無料ツールです。作った CSS は自由に使えます。<br>
   ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。<br>
   <a href="https://shiki365.github.io/">ほかのツールも見る（shiki365 のツール置き場）</a> ・ <a href="https://shiki365.github.io/#contact">不具合の報告・感想</a> ・ <a href="https://marshmallow-qa.com/jisg2c3imbza76d">ほしいツールの要望（マシュマロ）</a> ・ <a href="https://sabunomisogi.booth.pm/items/8891048">開発を応援する（BOOTH）</a><br>
-  v1.8 ・ 最終更新 2026-09-24
+  v1.9 ・ 最終更新 2026-09-24
 </footer>
 
 <script src="presets.v1.js?v=4"></script>
@@ -580,6 +582,6 @@
 <script src="css.v1.js?v=6"></script>
 <script src="mock.v1.js?v=1"></script>
 <script src="pcfonts.v1.js?v=1"></script>
-<script src="app.v1.js?v=4"></script>
+<script src="app.v1.js?v=5"></script>
 </body>
 </html>

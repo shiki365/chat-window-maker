@@ -459,6 +459,16 @@
 
   function wireEvents() {
     for (const btn of $$("[data-tab]")) btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+    // Arrow keys / Home / End move between the tabs, as in the WAI-ARIA tabs pattern.
+    $(".tabbar").addEventListener("keydown", ev => {
+      const tabs = $$("[data-tab]"), i = tabs.indexOf(document.activeElement);
+      const next = i < 0 ? undefined : { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[ev.key];
+      if (next === undefined) return;
+      ev.preventDefault();
+      const tab = tabs[(next + tabs.length) % tabs.length];
+      tab.focus();
+      switchTab(tab.dataset.tab);
+    });
     $("#design").addEventListener("change", showDesignDesc);
     $("#applyDesign").addEventListener("click", () => {
       const key = $("#design").value;
