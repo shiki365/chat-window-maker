@@ -126,7 +126,7 @@
       motion: { enter: "slideLeft", enterDur: 0.35 },
     },
     dicepop: {
-      label: "ダイス速報（1件を大きく）", desc: "最新のダイスを1件だけ大きく出して、10秒で消えます。立ち絵の近くに置く使い方に。",
+      label: "ダイス速報（1件を大きく）", desc: "最新のダイスを1件だけ大きく出して、10秒で消えます。立ち絵の近くや、メッセージボックスメーカーで作ったボックスの横に置く使い方に。",
       panel: { bgAlpha: 0, borderW: 0, shadow: 0, pad: 4 },
       list: { count: 1, diceOnly: true },
       card: { bg: "#08090d", bgAlpha: 0.86, radius: 14, borderW: 2, borderColor: "#ffffff", borderAlpha: 0.2, padX: 16, padY: 12, shadow: 0.5, resultBorder: true },
