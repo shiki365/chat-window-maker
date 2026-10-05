@@ -5,11 +5,15 @@
  * Class names starting with "ccf-" exist only here; the generated CSS must never rely on them.
  * The page's own styles are kept (no CssBaseline, so boxes are content-box; body is #202020;
  * the message list is virtualized), so a CSS that forgets to override something breaks here too.
+ *
+ * Its texts follow the page's language (i18n.v1.js), as CCFOLIA itself shows English and Korean:
+ * labels, tab names, sample names, lines and dice results.
  */
 (function () {
   "use strict";
 
   const P = window.ChatPresets;
+  const t = text => (window.I18n ? window.I18n.t(text) : text);
   const FONT = '"Roboto", "Helvetica", "Arial", sans-serif';
 
   const BASE_CSS = `
@@ -121,6 +125,7 @@ img { vertical-align: middle; user-select: none; }
     right: "M8.59 16.34l4.58-4.59-4.58-4.59L10 5.75l6 6-6 6z",
   };
 
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const svg = (d, extra) => `<svg class="MuiSvgIcon-root ${extra || ""}" focusable="false" aria-hidden="true" viewBox="0 0 24 24"><path d="${d}"></path></svg>`;
 
   const avatarCache = new Map();
@@ -139,18 +144,19 @@ img { vertical-align: middle; user-select: none; }
   }
 
   function documentHtml() {
-    return "<!doctype html><html lang='ja'><head><meta charset='utf-8'>"
+    const lang = window.I18n ? window.I18n.lang : "ja";
+    return `<!doctype html><html lang='${lang}'><head><meta charset='utf-8'>`
       + `<style id="ccf-base">${BASE_CSS}</style><style id="obs-custom"></style></head>`
       + "<body><div id='root'><div class='ccf-wrap'>"
       + "<div class='MuiDrawer-root MuiDrawer-docked'>"
       + "<div class='MuiPaper-root MuiPaper-elevation MuiPaper-elevation0 MuiDrawer-paper MuiDrawer-paperAnchorRight MuiDrawer-paperAnchorDockedRight'>"
       + "<header class='MuiPaper-root MuiPaper-elevation MuiPaper-elevation4 MuiAppBar-root MuiAppBar-colorDefault MuiAppBar-positionSticky ccf-elev4'>"
       + "<div class='MuiToolbar-root MuiToolbar-gutters MuiToolbar-regular'>"
-      + `<button class='MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart' tabindex='-1' type='button' aria-label='チャットウィンドウをとじる'>${svg(ICON.close)}</button>`
-      + "<div class='ccf-grow'></div><h6 class='MuiTypography-root MuiTypography-subtitle2'>ルームチャット</h6><div class='ccf-grow'></div>"
+      + `<button class='MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart' tabindex='-1' type='button' aria-label='${esc(t("チャットウィンドウをとじる"))}'>${svg(ICON.close)}</button>`
+      + `<div class='ccf-grow'></div><h6 class='MuiTypography-root MuiTypography-subtitle2'>${esc(t("ルームチャット"))}</h6><div class='ccf-grow'></div>`
       + `<button class='MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeEnd' tabindex='-1' type='button'>${svg(ICON.menu)}</button>`
       + "</div></header>"
-      + "<ul class='MuiList-root ccf-list' role='log' aria-label='ルームチャット' aria-live='polite'>"
+      + `<ul class='MuiList-root ccf-list' role='log' aria-label='${esc(t("ルームチャット"))}' aria-live='polite'>`
       + "<div class='ccf-vouter' style='height: 0px; width: 100%; position: relative;'>"
       + "<div style='position: absolute; top: 0px; left: 0px; width: 100%; transform: translateY(0px);'></div></div></ul>"
       + "<div class='MuiPaper-root MuiPaper-elevation MuiPaper-square MuiPaper-elevation6 ccf-formpaper ccf-elev6'>"
@@ -163,22 +169,20 @@ img { vertical-align: middle; user-select: none; }
       + `<div style='position: relative; display: inline-flex;'><div class='MuiButtonBase-root MuiTabs-scrollButtons Mui-disabled' role='button'>${svg(ICON.right, "MuiSvgIcon-fontSizeSmall")}</div></div>`
       + "</div></div></header>"
       + "<div class='ccf-charrow'><button class='MuiButtonBase-root ccf-charbtn' type='button' tabindex='-1'></button><input class='ccf-nameinput' value='KP' tabindex='-1'></div>"
-      + "<div class='MuiInputBase-root MuiInputBase-multiline ccf-input'><textarea name='text' placeholder='メッセージを入力' tabindex='-1'></textarea></div>"
+      + `<div class='MuiInputBase-root MuiInputBase-multiline ccf-input'><textarea name='text' placeholder='${esc(t("メッセージを入力"))}' tabindex='-1'></textarea></div>`
       + "<hr class='MuiDivider-root'>"
       + "<div class='MuiBox-root ccf-typing'><span class='MuiTypography-root MuiTypography-caption MuiTypography-noWrap'>Dicebot engine :&nbsp;BCDice</span></div>"
       + "</form></div>"
       + "</div></div></div></div></body></html>";
   }
 
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
   function tabsHtml(tab) {
     const secret = P.SAMPLE_TABS.secret;
     const tabs = [
-      ["main", `<span class='MuiBadge-root'>メイン<span class='MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-colorSecondary'>0</span></span>`],
-      ["info", `<span class='MuiBadge-root'>情報<span class='MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-colorSecondary'></span></span>`],
-      ["other", `<span class='MuiBadge-root'>雑談<span class='MuiBadge-badge MuiBadge-dot MuiBadge-colorSecondary'></span></span>`],
-      ["secret", `<span class='MuiBadge-root'><div class='MuiBox-root ccf-flex'>${svg(ICON.lock, "ccf-lock")}${esc(secret.label)}</div>`
+      ["main", `<span class='MuiBadge-root'>${esc(t("メイン"))}<span class='MuiBadge-badge MuiBadge-standard MuiBadge-invisible MuiBadge-colorSecondary'>0</span></span>`],
+      ["info", `<span class='MuiBadge-root'>${esc(t("情報"))}<span class='MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-colorSecondary'></span></span>`],
+      ["other", `<span class='MuiBadge-root'>${esc(t("雑談"))}<span class='MuiBadge-badge MuiBadge-dot MuiBadge-colorSecondary'></span></span>`],
+      ["secret", `<span class='MuiBadge-root'><div class='MuiBox-root ccf-flex'>${svg(ICON.lock, "ccf-lock")}${esc(t(secret.label))}</div>`
         + "<span class='MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-colorSecondary'></span></span>"],
     ];
     return tabs.map(([key, label]) => {
@@ -186,13 +190,13 @@ img { vertical-align: middle; user-select: none; }
       // Every tab but メイン is sortable, and dnd-kit's attributes replace role="tab" with role="button".
       const role = key === "main" ? "role='tab'" : "role='button' aria-roledescription='sortable'";
       return `<button class='MuiButtonBase-root MuiTab-root MuiTab-textColorInherit${on ? " Mui-selected" : ""}' tabindex='${on ? 0 : -1}' type='button' ${role} aria-selected='${on}'>${label}<span class='MuiTouchRipple-root'></span></button>`;
-    }).join("") + `<button class='MuiButtonBase-root MuiTab-root MuiTab-textColorInherit' tabindex='-1' type='button' role='tab' aria-selected='false' aria-label='チャットタブを追加する'>${svg(ICON.add, "MuiSvgIcon-fontSizeSmall")}<span class='MuiTouchRipple-root'></span></button>`;
+    }).join("") + `<button class='MuiButtonBase-root MuiTab-root MuiTab-textColorInherit' tabindex='-1' type='button' role='tab' aria-selected='false' aria-label='${esc(t("チャットタブを追加する"))}'>${svg(ICON.add, "MuiSvgIcon-fontSizeSmall")}<span class='MuiTouchRipple-root'></span></button>`;
   }
 
   function membersHtml() {
     // Users' profile pictures, drawn as a direct second toolbar of the header (not wrapped).
     const avatars = ["hinata", "kp"].map(who => `<div class='MuiAvatar-root MuiAvatar-circular MuiAvatarGroup-avatar ccf-member'><img alt='' src='${avatarUrl(who)}' class='MuiAvatar-img' draggable='false'></div>`);
-    return `<div class='MuiToolbar-root MuiToolbar-gutters MuiToolbar-dense ccf-members-bar'><div class='MuiAvatarGroup-root' role='group' aria-label='チャットに参加中のユーザー'>${avatars.join("")}</div></div>`;
+    return `<div class='MuiToolbar-root MuiToolbar-gutters MuiToolbar-dense ccf-members-bar'><div class='MuiAvatarGroup-root' role='group' aria-label='${esc(t("チャットに参加中のユーザー"))}'>${avatars.join("")}</div></div>`;
   }
 
   // One message, as CCFOLIA renders it: <div data-index> <ListItem/> <Divider/> </div>
@@ -201,17 +205,17 @@ img { vertical-align: middle; user-select: none; }
     const system = m.kind === "system";
     const avatar = system ? "<div></div>"
       : `<div class='ccf-avbox'><div class='MuiAvatar-root MuiAvatar-square'><img alt='avatar' src='${avatarUrl(m.who)}' class='MuiAvatar-img' draggable='false'></div></div>`;
-    const primary = system ? "" : `${esc(s.name)}<span class='MuiTypography-root MuiTypography-caption' style='color: rgb(117, 117, 117);'>&nbsp;-&nbsp;${esc(m.time)}</span>`;
+    const primary = system ? "" : `${esc(t(s.name))}<span class='MuiTypography-root MuiTypography-caption' style='color: rgb(117, 117, 117);'>&nbsp;-&nbsp;${esc(m.time)}</span>`;
     const resultClass = P.RESULT_CLASS[m.kind];
-    const result = m.result && resultClass ? `<span class='MuiTypography-root MuiTypography-body2 ${resultClass}'>&nbsp;${esc(m.result)}</span>` : "";
+    const result = m.result && resultClass ? `<span class='MuiTypography-root MuiTypography-body2 ${resultClass}'>&nbsp;${esc(t(m.result))}</span>` : "";
     // The viewer (the GM's account) gets edit buttons on their own messages.
-    const actions = m.who === "kp" ? `<div class='ccf-actions'><button class='MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall' tabindex='-1' type='button' aria-label='チャットを編集する'>${svg(ICON.edit, "MuiSvgIcon-fontSizeSmall")}</button></div>` : "";
+    const actions = m.who === "kp" ? `<div class='ccf-actions'><button class='MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall' tabindex='-1' type='button' aria-label='${esc(t("チャットを編集する"))}'>${svg(ICON.edit, "MuiSvgIcon-fontSizeSmall")}</button></div>` : "";
     return `<div data-index='${index}'>`
       + "<div class='MuiListItem-root MuiListItem-gutters MuiListItem-padding MuiListItem-alignItemsFlexStart'>"
       + `<div class='MuiListItemAvatar-root MuiListItemAvatar-alignItemsFlexStart'>${avatar}</div>`
       + "<div class='MuiListItemText-root MuiListItemText-multiline'>"
       + `<span class='MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap MuiListItemText-primary'${system ? "" : ` style='color: ${s.color};'`}>${primary}</span>`
-      + `<p class='MuiTypography-root MuiTypography-body2 MuiListItemText-secondary ${system ? "ccf-text-secondary" : "ccf-text-primary"}' style='word-break: break-all; white-space: pre-wrap; overflow-wrap: anywhere;'>${esc(m.text)}${result}</p>`
+      + `<p class='MuiTypography-root MuiTypography-body2 MuiListItemText-secondary ${system ? "ccf-text-secondary" : "ccf-text-primary"}' style='word-break: break-all; white-space: pre-wrap; overflow-wrap: anywhere;'>${esc(t(m.text))}${result}</p>`
       + `</div>${actions}</div>`
       + "<hr class='MuiDivider-root MuiDivider-middle MuiDivider-light'></div>";
   }

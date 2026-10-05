@@ -30,9 +30,15 @@
  * Every declaration gets !important, except properties that animations move (an !important
  * declaration wins over the animation). Those are only set on div[data-index], which the page
  * never styles.
+ *
+ * The selectors use roles and MUI classes, never CCFOLIA's texts, so they work in every language it shows.
+ * The comments in the CSS follow the page's language (i18n.v1.js): Japanese text, through t().
  */
 (function () {
   "use strict";
+
+  const t = (text, vars) => (window.I18n ? window.I18n.t(text, vars)
+    : vars ? text.replace(/\{(\w+)\}/g, (all, name) => (name in vars ? String(vars[name]) : all)) : text);
 
   const P = window.ChatPresets, R = P.RESULT_CLASS;
 
@@ -116,7 +122,7 @@
   function pcFontNote(uses) {
     const names = [...new Set(uses.filter(([key]) => key === "pc").map(([, , name]) => pcName(name)).filter(Boolean))];
     if (!names.length) return [];
-    return ["   ■ PC のフォント（OBS を動かす PC にも入れてください）", `       ${safeComment(names.join(" / "))}`];
+    return [t("   ■ PC のフォント（OBS を動かす PC にも入れてください）"), `       ${safeComment(names.join(" / "))}`];
   }
 
   function fontImports(uses) {
@@ -193,7 +199,7 @@
       images.push(grainUrl(0.35, 140));
       sizes.push("140px 140px");
     }
-    w.comment("窓（ブラウザソースの中に置く箱）");
+    w.comment(t("窓（ブラウザソースの中に置く箱）"));
     w.add(SEL.panel, {
       position: "fixed", left: M, right: M,
       top: !fit || L.anchor === "top" ? M : "auto", bottom: !fit || L.anchor === "bottom" ? M : "auto",
@@ -226,7 +232,7 @@
   function listRules(st, w) {
     const L = st.list, A = st.panel, newBottom = L.order === "newBottom";
     const scroll = scrolls(st), fit = A.mode === "fit" && !scroll;
-    w.comment("メッセージの並び（最新の件数だけ残す）");
+    w.comment(t("メッセージの並び（最新の件数だけ残す）"));
     w.add(SEL.list, {
       // The virtualizer renders nothing while the list is 0px tall (and then it never grows), so keep 1px.
       flex: fit ? "0 1 auto" : "1 1 auto", "min-height": "1px", height: "auto", width: "auto",
@@ -254,7 +260,7 @@
     w.add(`${E}:nth-last-child(-n+${n})`, { display: "block" });
     const filter = L.diceOnly ? HAS_RESULT : L.hideSystem ? `:not(${IS_SYSTEM})` : "";
     if (filter) {
-      w.comment(L.diceOnly ? "ダイスの結果だけ（OBS 31 以降）" : "システムメッセージを除く（OBS 31 以降）");
+      w.comment(t(L.diceOnly ? "ダイスの結果だけ（OBS 31 以降）" : "システムメッセージを除く（OBS 31 以降）"));
       // Older OBS drops these two rules and falls back to the plain "latest N" above.
       w.add(`${E}:not(:nth-last-child(-n+${n} of ${filter}))`, { display: "none" });
       w.add(`${E}:nth-last-child(-n+${n} of ${filter})`, { display: "block" });
@@ -273,7 +279,7 @@
     };
     const accentW = C.accent !== "none" ? C.accentW : 0;
 
-    w.comment("1件ぶんの箱");
+    w.comment(t("1件ぶんの箱"));
     w.add(ITEM, Object.assign({
       display: "flex", "align-items": AV.align === "center" && !scrolls(st) ? "center" : "flex-start", gap: AV.show ? px(AV.gap) : "0",
       width: "100%", margin: "0", "box-sizing": "border-box", position: "relative", "min-height": "0", "text-align": "left",
@@ -298,7 +304,7 @@
 
     // Result color of the message, for the accent line and the border (OBS 31 and later).
     if (C.accent === "result" || C.resultBorder) {
-      w.comment("ダイスの成否で箱の色を変える（OBS 31 以降）");
+      w.comment(t("ダイスの成否で箱の色を変える（OBS 31 以降）"));
       for (const kind of ["success", "failure", "neutral"]) w.add(E + hasResult(kind), { "--cw-res": st.result[kind] });
     }
     if (C.resultBorder) {
@@ -331,7 +337,7 @@
 
   function avatarRules(st, w) {
     const AV = st.avatar;
-    w.comment("アイコン");
+    w.comment(t("アイコン"));
     if (!AV.show) {
       w.add(E + PART.avatarCol, { display: "none" });
       return;
@@ -350,7 +356,7 @@
 
   function nameRules(st, w) {
     const N = st.name, T = st.text, NAME = E + PART.name, colon = N.style === "colon";
-    w.comment("名前");
+    w.comment(t("名前"));
     if (!N.show) {
       // Kept in the layout at zero size: its pseudo-element may still draw the accent line.
       w.add(NAME, { "font-size": "0", "line-height": "0", height: "0", margin: "0", padding: "0", border: "none", overflow: "visible" });
@@ -369,7 +375,8 @@
     else if (colon) Object.assign(decls, { display: "inline", overflow: "visible", "white-space": "normal" });
     else decls.display = "block";
     w.add(NAME, decls);
-    if (colon) w.add(NAME + "::after", { content: '"："' });
+    // The colon after the name follows the page's language (full-width in Japanese).
+    if (colon) w.add(NAME + "::after", { content: cssString(t("：")) });
 
     w.add(E + PART.time, N.time && !colon
       ? { display: "inline", "font-family": "inherit", "font-size": "0.78em", "font-weight": "400", "margin-left": "0.3em",
@@ -379,7 +386,7 @@
 
   function textRules(st, w) {
     const T = st.text, colon = st.name.show && st.name.style === "colon", BODY = E + PART.body;
-    w.comment("本文");
+    w.comment(t("本文"));
     const decls = {
       "font-family": family(T.font, T.fontName), "font-size": px(T.size), "font-weight": weightOf(T.font, T.weight),
       color: T.color, "-webkit-text-fill-color": T.color, "line-height": String(T.lineHeight), "letter-spacing": `${T.spacing}em`,
@@ -393,7 +400,7 @@
 
   function resultRules(st, w, keyframe) {
     const RS = st.result, T = st.text, RESULT = E + PART.result;
-    w.comment("ダイスの結果（成功・失敗・その他）");
+    w.comment(t("ダイスの結果（成功・失敗・その他）"));
     const decls = {
       "font-family": family(RS.font, RS.fontName), "font-size": px(RS.size), "font-weight": weightOf(RS.font, RS.weight),
       "line-height": "1.35", "letter-spacing": "0.02em", display: RS.newLine ? (RS.style === "text" ? "block" : "table") : "inline",
@@ -459,7 +466,7 @@
       background: "none", "box-shadow": "none", color: T.color, "z-index": "2" }, titleBoxDecls(T, pad));
 
     if (T.source === "text") {
-      w.comment("見出し");
+      w.comment(t("見出し"));
       w.add(SEL.form, { display: "none" });
       w.add(SEL.header, hostDecls);
       w.add(`${SEL.header} > .MuiToolbar-root:first-child`, { display: "flex", "align-items": "center", gap: sp.gap, "min-height": "0", padding: "0" });
@@ -475,7 +482,7 @@
     // Title from the open tab. Scoped to "not hovered" so the tabs look normal while picking one in OBS.
     const scope = st.hover.tabs ? "html:not(:hover) " : "";
     const FORM = scope + SEL.form, HEAD = `${FORM} > form > header`;
-    w.comment("見出し（開いているタブの名前）");
+    w.comment(t("見出し（開いているタブの名前）"));
     w.add(FORM, Object.assign({}, hostDecls, { "border-radius": "0" }));
     w.add(`${FORM} > form`, { background: "none" });
     w.add(`${FORM} > form > :not(header)`, { display: "none" });
@@ -510,7 +517,7 @@
       w.add(textTitle ? ROW : SEL.header, { display: "none" });
       return;
     }
-    w.comment("秘匿タブに参加しているユーザーのアイコン");
+    w.comment(t("秘匿タブに参加しているユーザーのアイコン"));
     if (!textTitle) {
       w.add(SEL.header, { display: "block", position: "static", order: "0", flex: "none", width: "auto", margin: "0", padding: "0",
         background: "none", "box-shadow": "none", color: "inherit", "z-index": "2" });
@@ -537,7 +544,7 @@
   // While the mouse is over the page (only in OBS's "Interact" window) the tabs appear, so a tab can be picked.
   function hoverRules(st, w) {
     if (!st.hover.tabs) return;
-    w.comment("OBS の「対話」でマウスを乗せたときだけ、タブを出す");
+    w.comment(t("OBS の「対話」でマウスを乗せたときだけ、タブを出す"));
     const FORM = "html:hover " + SEL.form;
     w.add(FORM, { display: "block", position: "absolute", top: "0", left: "0", right: "0", "z-index": "50", margin: "0", padding: "0",
       background: "#212121", "box-shadow": "0 2px 8px rgba(0, 0, 0, 0.6)", "border-radius": "0", order: "-1" });
@@ -570,7 +577,7 @@
       keyframe(`cw-in-${MO.enter}`, ENTER_FRAMES[MO.enter]);
     }
     if (scroll) {
-      w.comment(`長い本文をゆっくり流す（${round(MO.scrollWait, 10)}秒待ってから${round(MO.scrollDur, 10)}秒で。OBS 31 以降）`);
+      w.comment(t("長い本文をゆっくり流す（{wait}秒待ってから{dur}秒で。OBS 31 以降）", { wait: round(MO.scrollWait, 10), dur: round(MO.scrollDur, 10) }));
       // Moves by (window height - message height), never down: 100cqh is the list, 100% the moving box itself.
       // "both" keeps a transform during the wait too, so the containing block of the accent line never changes.
       // It runs inside the entry, so it does not fight the entry's own animations over transform.
@@ -589,7 +596,7 @@
       keyframe("cw-out", `0% { opacity: 1; max-height: 1200px; } 75% { opacity: 0; max-height: 1200px; margin-top: ${px(st.list.gap)}; } 100% { opacity: 0; max-height: 0; margin-top: 0; visibility: hidden; }`);
     }
     if (!list.length) return;
-    w.comment(MO.exit ? `出るときの動き / ${round(exitAt, 10)}秒で消える` : "出るときの動き");
+    w.comment(MO.exit ? t("出るときの動き / {sec}秒で消える", { sec: round(exitAt, 10) }) : t("出るときの動き"));
     w.add(E, { animation: list.join(", "), "transform-origin": "center center" }, ["animation", "transform-origin"]);
   }
 
@@ -611,18 +618,18 @@
 
     w.raw([
       "/* ==========================================================================",
-      "   ココフォリア → OBS  チャットウィンドウ",
-      `   チャットウィンドウメーカーで作成${design ? `（ひな形: ${safeComment(design.label)}）` : ""}`,
+      t("   ココフォリア → OBS  チャットウィンドウ"),
+      t("   チャットウィンドウメーカーで作成") + (design ? t("（ひな形: {label}）", { label: safeComment(t(design.label)) }) : ""),
       "   --------------------------------------------------------------------------",
-      "   ■ ブラウザソースのURL",
-      `       ${safeComment(opts.url || "https://ccfolia.com/rooms/{ルームID}/chat")}`,
-      "       ※ 末尾が /chat の URL です。ルームの URL だと、ルームの画面（背景や駒）がそのまま映ります。",
-      `   ■ ブラウザソースの大きさ  幅 ${st.source.w} / 高さ ${st.source.h}`,
-      "   ■ 秘匿タブなどメイン以外を映すとき",
-      "       ソースを右クリック →「対話」→ 窓にマウスを乗せるとタブが出るので、映したいタブを選ぶ。",
-      "       タブの選択は保存されないので、OBS を起動し直したら選び直してください。",
-      ...(needs31 ? ["   ■ ダイスだけ表示・成否の色分けは OBS 31 以降で動きます。"] : []),
-      ...(scrolls(st) ? ["   ■ 長い本文をゆっくり流すのは OBS 31 以降で動きます（古い OBS では先頭が出たまま止まります）。"] : []),
+      t("   ■ ブラウザソースのURL"),
+      `       ${safeComment(opts.url || t("https://ccfolia.com/rooms/{ルームID}/chat"))}`,
+      t("       ※ 末尾が /chat の URL です。ルームの URL だと、ルームの画面（背景や駒）がそのまま映ります。"),
+      t("   ■ ブラウザソースの大きさ  幅 {w} / 高さ {h}", { w: st.source.w, h: st.source.h }),
+      t("   ■ 秘匿タブなどメイン以外を映すとき"),
+      t("       ソースを右クリック →「対話」→ 窓にマウスを乗せるとタブが出るので、映したいタブを選ぶ。"),
+      t("       タブの選択は保存されないので、OBS を起動し直したら選び直してください。"),
+      ...(needs31 ? [t("   ■ ダイスだけ表示・成否の色分けは OBS 31 以降で動きます。")] : []),
+      ...(scrolls(st) ? [t("   ■ 長い本文をゆっくり流すのは OBS 31 以降で動きます（古い OBS では先頭が出たまま止まります）。")] : []),
       ...pcFontNote(uses),
       "   ========================================================================== */",
     ].join("\n"));
@@ -630,7 +637,7 @@
     const imports = fontImports(uses);
     if (imports.length) w.raw(imports.join("\n"));
 
-    w.comment("背景を透過して、余計なものを消す");
+    w.comment(t("背景を透過して、余計なものを消す"));
     w.add("html, body", { background: "transparent", margin: "0", padding: "0", overflow: "hidden" });
     w.add("#root > div", { padding: "0", margin: "0" });
     w.add("::-webkit-scrollbar", { display: "none" });

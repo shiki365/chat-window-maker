@@ -9,6 +9,8 @@
   "use strict";
 
   const P = window.ChatPresets;
+  // The sample texts of a design (title, "to" label) come in the page's language (i18n.v1.js).
+  const t = text => (window.I18n ? window.I18n.t(text) : text);
   const clone = value => JSON.parse(JSON.stringify(value));
   const isObj = v => !!v && typeof v === "object" && !Array.isArray(v);
   const LOOK_KEYS = ["panel", "title", "members", "list", "card", "avatar", "name", "text", "result", "motion"];
@@ -27,6 +29,8 @@
     const d = P.DESIGNS[key] || {};
     const look = {};
     for (const k of LOOK_KEYS) look[k] = deepMerge(P.BASE_LOOK[k], d[k]);
+    look.title.text = t(look.title.text);
+    look.members.label = t(look.members.label);
     return look;
   }
 

@@ -14,6 +14,10 @@
 (function () {
   "use strict";
 
+  // Texts are written in Japanese and go through t() (i18n.v1.js); the Japanese text is the key.
+  const t = (text, vars) => (window.I18n ? window.I18n.t(text, vars)
+    : vars ? text.replace(/\{(\w+)\}/g, (all, name) => (name in vars ? String(vars[name]) : all)) : text);
+
   const P = window.ChatPresets, M = window.ChatModel, C = window.ChatCss, K = window.ChatMock;
   const $ = sel => document.querySelector(sel);
   const $$ = sel => [...document.querySelectorAll(sel)];
@@ -58,7 +62,7 @@
   function stamp(m) {
     serial++;
     const minutes = 4 + serial;
-    return Object.assign({ id: "m" + serial, time: `今日 21:${String(minutes % 60).padStart(2, "0")}` }, m);
+    return Object.assign({ id: "m" + serial, time: t("今日 {time}", { time: "21:" + String(minutes % 60).padStart(2, "0") }) }, m);
   }
 
   const messages = {};
@@ -74,13 +78,12 @@
 
   // Say why a sent message stays hidden, so an active filter is not taken for a broken button.
   function sentStatus(kind) {
-    const label = KIND_LABEL[kind] || "メッセージ";
+    const sent = t("{label}を送りました。", { label: t(KIND_LABEL[kind] || "メッセージ") });
     const dice = kind === "success" || kind === "failure" || kind === "neutral";
-    const where = "（「窓・見出し」タブの「映すメッセージ」で切り替えられます）";
-    if (state.list.diceOnly && !dice) status(`${label}を送りました。「ダイスの結果だけ」がオンなので、窓には出ません${where}`);
-    else if (kind === "system" && state.list.hideSystem) status(`${label}を送りました。「システムメッセージを除く」がオンなので、窓には出ません${where}`);
-    else if (kind === "long" && !state.motion.scroll) status(`${label}を送りました。窓に収まらない本文は、「動き・消す」タブの「長い本文をゆっくり流す」で流せます。`);
-    else status(`${label}を送りました。`);
+    if (state.list.diceOnly && !dice) status(sent + t("「ダイスの結果だけ」がオンなので、窓には出ません（「窓・見出し」タブの「映すメッセージ」で切り替えられます）"));
+    else if (kind === "system" && state.list.hideSystem) status(sent + t("「システムメッセージを除く」がオンなので、窓には出ません（「窓・見出し」タブの「映すメッセージ」で切り替えられます）"));
+    else if (kind === "long" && !state.motion.scroll) status(sent + t("窓に収まらない本文は、「動き・消す」タブの「長い本文をゆっくり流す」で流せます。"));
+    else status(sent);
   }
 
   function send(kind) {
@@ -95,10 +98,10 @@
 
   function sendCustom() {
     const text = $("#customText").value.trim();
-    if (!text) { status("送る文を入れてください。", true); return; }
+    if (!text) { status(t("送る文を入れてください。"), true); return; }
     const kind = $("#customKind").value;
     const [body, result] = text.split("|").map(s => s.trim());
-    if (kind !== "chat" && !result) { status("ダイスの結果は「|」の後ろに書きます（例: CC<=50 | (1D100<=50) ＞ 23 ＞ 成功）。", true); return; }
+    if (kind !== "chat" && !result) { status(t("ダイスの結果は「|」の後ろに書きます（例: CC<=50 | (1D100<=50) ＞ 23 ＞ 成功）。"), true); return; }
     messages[state.preview.tab].push(stamp({ who: $("#customWho").value, kind, text: body, result: kind === "chat" ? undefined : result }));
     $("#customText").value = "";
     requestRender();
@@ -138,7 +141,7 @@
       state.list.count = 1;
       state.panel.mode = "fixed";
       syncControls();
-      if (changed) status("長い本文を流すため、映す件数を 1 件、窓を「ソースいっぱいの窓」にしました。");
+      if (changed) status(t("長い本文を流すため、映す件数を 1 件、窓を「ソースいっぱいの窓」にしました。"));
     }
     updateVisibility();
     updateOutputs();
@@ -168,10 +171,10 @@
     switch (fmt) {
       case "pct": return Math.round(value * 100) + "%";
       case "px": return r + "px";
-      case "sec": return r + "秒";
+      case "sec": return t("{n}秒", { n: r });
       case "em": return r.toFixed(2);
-      case "items": return value + "件";
-      case "lines": return value > 0 ? value + "行" : "切らない";
+      case "items": return t("{n}件", { n: value });
+      case "lines": return value > 0 ? t("{n}行", { n: value }) : t("切らない");
       default: return String(r);
     }
   }
@@ -224,7 +227,7 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
   function optionsHtml(list) {
-    return list.map(([value, text]) => `<option value="${esc(value)}">${esc(text)}</option>`).join("");
+    return list.map(([value, text]) => `<option value="${esc(value)}">${esc(t(text))}</option>`).join("");
   }
 
   // Shown in the OBS tab and above the CSS buttons: pasting the room URL itself shows the whole room in OBS.
@@ -240,7 +243,7 @@
   function copyChatUrl() {
     const url = M.chatUrl(state.source.room);
     if (!url) return;
-    copyText(url).then(ok => status(ok ? "URL をコピーしました。OBS のブラウザソースの URL に貼り付けてください。" : "コピーできませんでした。", !ok));
+    copyText(url).then(ok => status(t(ok ? "URL をコピーしました。OBS のブラウザソースの URL に貼り付けてください。" : "コピーできませんでした。"), !ok));
   }
 
   // ---------------------------------------------------------------- preview
@@ -279,8 +282,9 @@
     frame.style.transform = `scale(${k})`;
     $("#frameBox").style.width = Math.round(w * k) + "px";
     $("#frameBox").style.height = Math.round(h * k) + "px";
-    $("#stageInfo").textContent = `表示 ${Math.round(k * 100)}%　ピンクの点線 = ブラウザソースの範囲${state.hover.tabs ? "　マウスを乗せるとタブが出ます（OBS の対話と同じ）" : ""}`;
-    $("#sizeNote").innerHTML = `ブラウザソースの大きさ　幅 <b>${w}</b> × 高さ <b>${h}</b>`;
+    $("#stageInfo").textContent = t("表示 {pct}%　ピンクの点線 = ブラウザソースの範囲", { pct: Math.round(k * 100) })
+      + (state.hover.tabs ? t("　マウスを乗せるとタブが出ます（OBS の対話と同じ）") : "");
+    $("#sizeNote").innerHTML = t("ブラウザソースの大きさ　幅 <b>{w}</b> × 高さ <b>{h}</b>", { w, h });
   }
 
   function setupFrame() {
@@ -314,9 +318,9 @@
 
   function copyCss() {
     copyText(currentCss()).then(ok => {
-      if (!ok) { status("コピーできませんでした。下の「書き出す CSS を見る」から選んでコピーしてください。", true); return; }
-      const urlNote = M.chatUrl(state.source.room) ? "" : "ブラウザソースの URL は、末尾が /chat のチャット画面のものにしてください。";
-      status(`CSS をコピーしました。OBS のブラウザソース（幅 ${state.source.w} × 高さ ${state.source.h}）のカスタム CSS に貼り付けてください。${urlNote}`);
+      if (!ok) { status(t("コピーできませんでした。下の「書き出す CSS を見る」から選んでコピーしてください。"), true); return; }
+      const urlNote = M.chatUrl(state.source.room) ? "" : t("ブラウザソースの URL は、末尾が /chat のチャット画面のものにしてください。");
+      status(t("CSS をコピーしました。OBS のブラウザソース（幅 {w} × 高さ {h}）のカスタム CSS に貼り付けてください。", { w: state.source.w, h: state.source.h }) + urlNote);
     });
   }
 
@@ -338,7 +342,7 @@
   function downloadCss() {
     const name = `${baseName()}.css`;
     download(new Blob([currentCss()], { type: "text/css" }), name);
-    status(`${name} を保存しました。`);
+    status(t("{name} を保存しました。", { name }));
   }
 
   // ---------------------------------------------------------------- history & saving
@@ -412,17 +416,17 @@
   function saveProject() {
     const data = { app: "ccf-chatwindow-maker", version: 1, state };
     download(new Blob([JSON.stringify(data, null, 1)], { type: "application/json" }), baseName() + ".chatwindow.json");
-    status("プロジェクトを保存しました。");
+    status(t("プロジェクトを保存しました。"));
   }
 
   async function openProjectFile(file) {
     try {
       const data = JSON.parse(await file.text());
-      if (!data || data.app !== "ccf-chatwindow-maker" || !data.state) throw new Error("このツールのプロジェクトファイルではありません。");
+      if (!data || data.app !== "ccf-chatwindow-maker" || !data.state) throw new Error(t("このツールのプロジェクトファイルではありません。"));
       loadState(M.normalize(data.state));
-      status(`「${file.name}」を開きました。`);
+      status(t("「{file}」を開きました。", { file: file.name }));
     } catch (err) {
-      status(err instanceof SyntaxError ? "ファイルを読み取れませんでした。" : err.message, true);
+      status(err instanceof SyntaxError ? t("ファイルを読み取れませんでした。") : err.message, true);
     }
   }
 
@@ -443,7 +447,7 @@
 
   function showDesignDesc() {
     const d = P.DESIGNS[$("#design").value];
-    $("#designDesc").textContent = d ? d.desc + "（窓・文字・色・動きがまとめて置き換わります。ブラウザソースの大きさとルームはそのまま）" : "";
+    $("#designDesc").textContent = d ? t(d.desc) + t("（窓・文字・色・動きがまとめて置き換わります。ブラウザソースの大きさとルームはそのまま）") : "";
   }
 
   function buildStaticUI() {
@@ -453,7 +457,7 @@
       const list = Array.isArray(source) ? source : Object.entries(source).map(([key, v]) => [key, v.label]);
       select.innerHTML = optionsHtml(list);
     }
-    $("#customWho").innerHTML = optionsHtml(Object.entries(P.SPEAKERS).filter(([key]) => key !== "system").map(([key, s]) => [key, s.name]));
+    $("#customWho").innerHTML = optionsHtml(Object.entries(P.SPEAKERS).filter(([key]) => key !== "system").map(([key, s]) => [key, t(s.name)]));
     bindControls(document);
   }
 
@@ -475,7 +479,7 @@
       M.applyDesign(state, key);
       commit();
       syncAll();
-      status(`「${P.DESIGNS[key].label}」を適用しました。`);
+      status(t("「{label}」を適用しました。", { label: t(P.DESIGNS[key].label) }));
     });
     $("#undo").addEventListener("click", undo);
     $("#redo").addEventListener("click", redo);
@@ -509,7 +513,7 @@
     $("#resetMessages").addEventListener("click", () => {
       resetMessages(state.preview.tab);
       requestRender();
-      status("プレビューのメッセージを最初の状態に戻しました。");
+      status(t("プレビューのメッセージを最初の状態に戻しました。"));
     });
 
     $("#copyCss").addEventListener("click", copyCss);
@@ -527,9 +531,9 @@
     $("#openProject").addEventListener("click", () => { $("#projectFile").value = ""; $("#projectFile").click(); });
     $("#projectFile").addEventListener("change", ev => { if (ev.target.files[0]) openProjectFile(ev.target.files[0]); });
     $("#resetAll").addEventListener("click", () => {
-      if (!confirm("いまの作業内容を消して、最初の状態に戻します。よろしいですか？")) return;
+      if (!confirm(t("いまの作業内容を消して、最初の状態に戻します。よろしいですか？"))) return;
       loadState(M.defaultState());
-      status("最初の状態に戻しました。");
+      status(t("最初の状態に戻しました。"));
     });
   }
 
@@ -541,7 +545,7 @@
     switchTab($$("[data-tab]").some(b => b.dataset.tab === tab) ? tab : "window");
     loadState(loadSaved() || M.defaultState());
     setupFrame();
-    status("準備ができました。左で形や色を選ぶと、右のプレビューにすぐ反映されます。");
+    status(t("準備ができました。左で形や色を選ぶと、右のプレビューにすぐ反映されます。"));
   }
 
   init();

@@ -1,7 +1,8 @@
 /*!
- * pcfonts.v1.js - pick a font installed on this PC from a list (no dependencies)
+ * pcfonts.v2.js - pick a font installed on this PC from a list (no dependencies)
  *
- * Same file in status-bar-maker, chat-window-maker and foreground-frame-maker.
+ * Same file in every tool that has a PC font field (v1 in the tools not yet translated).
+ * v2: its texts go through window.I18n (i18n.v1.js) when the page has it, and stay Japanese otherwise.
  *
  * Markup:
  *   <span class="pc-font"><input type="text" data-bind="..."><button type="button" data-pc-fonts>一覧から選ぶ</button></span>
@@ -15,8 +16,10 @@
 (function () {
   "use strict";
 
+  const t = (text, vars) => (window.I18n ? window.I18n.t(text, vars)
+    : vars ? text.replace(/\{(\w+)\}/g, (all, name) => (name in vars ? String(vars[name]) : all)) : text);
   const supported = typeof window.queryLocalFonts === "function";
-  const SAMPLE = "あいう アイウ 永 Abc 123";
+  const SAMPLE = t("あいう アイウ 永 Abc 123");
 
   const STYLE = `
   .pc-font { display: flex; gap: 6px; align-items: center; min-width: 0; }
@@ -63,20 +66,20 @@
   function build() {
     if (dialog) return;
     ui = {
-      close: el("button", { type: "button", class: "small", text: "閉じる" }),
-      search: el("input", { type: "search", placeholder: "名前で絞り込む（例: gothic）", "aria-label": "フォント名で絞り込む", autocomplete: "off", spellcheck: "false" }),
-      sample: el("input", { type: "text", value: SAMPLE, "aria-label": "見本の文字" }),
+      close: el("button", { type: "button", class: "small", text: t("閉じる") }),
+      search: el("input", { type: "search", placeholder: t("名前で絞り込む（例: gothic）"), "aria-label": t("フォント名で絞り込む"), autocomplete: "off", spellcheck: "false" }),
+      sample: el("input", { type: "text", value: SAMPLE, "aria-label": t("見本の文字") }),
       msg: el("p", { class: "pcf-msg", role: "status" }),
       list: el("div", { class: "pcf-list" }),
     };
     dialog = el("dialog", { class: "pcf-dialog", "aria-labelledby": "pcfTitle" }, [
-      el("div", { class: "pcf-head" }, [el("h2", { id: "pcfTitle", text: "PC のフォントから選ぶ" }), ui.close]),
+      el("div", { class: "pcf-head" }, [el("h2", { id: "pcfTitle", text: t("PC のフォントから選ぶ") }), ui.close]),
       el("div", { class: "pcf-tools" }, [ui.search, ui.sample]),
       ui.msg,
       ui.list,
       el("p", { class: "pcf-note" }, [
-        "名前はそのフォントの見た目で表示しています。",
-        el("b", { text: "OBS を動かす PC にも、同じフォントが入っている必要があります。" }),
+        t("名前はそのフォントの見た目で表示しています。"),
+        el("b", { text: t("OBS を動かす PC にも、同じフォントが入っている必要があります。") }),
       ]),
     ]);
     document.body.append(dialog);
@@ -147,7 +150,8 @@
       item.hidden = !hit;
       if (hit) shown++;
     });
-    message(words.length ? `${fonts.length} 個のうち ${shown} 個` : `${fonts.length} 個のフォント。クリックで選べます。`);
+    message(words.length ? t("{all} 個のうち {shown} 個", { all: fonts.length, shown })
+      : t("{all} 個のフォント。クリックで選べます。", { all: fonts.length }));
   }
 
   function markCurrent() {
@@ -183,7 +187,7 @@
       return;
     }
     ui.list.replaceChildren();
-    message("PC のフォントを読み込んでいます…　ブラウザに「フォントの使用」の許可を聞かれたら「許可」を押してください。");
+    message(t("PC のフォントを読み込んでいます…　ブラウザに「フォントの使用」の許可を聞かれたら「許可」を押してください。"));
     load().then(() => {
       renderList();
       filter();
@@ -191,9 +195,9 @@
       ui.search.focus();
     }, err => {
       const refused = err && (err.name === "NotAllowedError" || err.name === "NotFoundError");
-      message(refused
+      message(t(refused
         ? "フォントの一覧を読み込めませんでした。フォントの使用が許可されていない可能性があります。アドレスバー左のアイコン →「サイトの設定」で「フォント」を「許可」にしてから、もう一度開いてください。フォント名を直接入力しても使えます。"
-        : "このページではフォントの一覧を読み込めませんでした（ファイルを直接開いたときなど）。フォント名を直接入力してください。", true);
+        : "このページではフォントの一覧を読み込めませんでした（ファイルを直接開いたときなど）。フォント名を直接入力してください。"), true);
     });
   }
 

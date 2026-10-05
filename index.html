@@ -1,7 +1,10 @@
 <!doctype html>
-<html lang="ja">
+<html lang="ja" data-langs="ja en ko">
 <head>
 <meta charset="utf-8">
+<script src="i18n.v1.js"></script>
+<script src="lang.en.v1.js"></script>
+<script src="lang.ko.v1.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>チャットウィンドウメーカー | ココフォリア × OBS</title>
 <meta name="description" content="ココフォリアのダイスの結果や秘匿チャットを、OBSに好きなデザインで映すためのカスタムCSSを作るツールです。プレビューで確かめながら、窓・文字・成否の色・動きを選んでコピーするだけ。">
@@ -37,7 +40,9 @@
 
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 0 16px 16px; }
   .tabbar { display: flex; gap: 2px; margin: 0 -16px; padding: 8px 8px 0; border-bottom: 1px solid var(--line);
-            position: sticky; top: 0; background: var(--panel); z-index: 2; border-radius: 10px 10px 0 0; }
+            position: sticky; top: 0; background: var(--panel); z-index: 2; border-radius: 10px 10px 0 0;
+            /* Labels too long for a narrow screen (another language) scroll here instead of widening the panel. */
+            overflow-x: auto; scrollbar-width: none; }
   .tabbar button { flex: 1; border: 0; border-bottom: 2px solid transparent; border-radius: 0; white-space: nowrap;
                    background: transparent; color: var(--muted); padding: 8px 2px 9px; }
   .tabbar button:hover { background: transparent; color: var(--fg); }
@@ -131,7 +136,11 @@
   .note a { color: #a8abff; }
   footer { border-top: 1px solid var(--line); padding: 16px 24px 40px; color: var(--muted); font-size: 12px; line-height: 1.9; }
   footer a { color: #a8abff; }
-  .home-link { display: inline-block; margin-bottom: 4px; color: var(--muted); font-size: 12px; text-decoration: none; }
+  .topline { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; margin-bottom: 4px; }
+  .lang-switch { margin: 0; color: var(--muted); font-size: 12px; }
+  .lang-switch a { color: #a8abff; }
+  .lang-switch a[aria-current] { color: var(--fg); font-weight: 700; text-decoration: none; }
+  .home-link { display: inline-block; color: var(--muted); font-size: 12px; text-decoration: none; }
   .home-link:hover { color: var(--fg); text-decoration: underline; }
   .home-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
@@ -139,7 +148,10 @@
 <body>
 
 <header>
-  <a class="home-link" href="https://shiki365.github.io/">‹ shiki365 のツール置き場</a>
+  <div class="topline">
+    <a class="home-link" href="https://shiki365.github.io/">‹ shiki365 のツール置き場</a>
+    <p class="lang-switch" data-lang-switch></p>
+  </div>
   <h1>チャットウィンドウメーカー</h1>
   <p>ココフォリアのダイスの結果や秘匿チャットを、OBS に好きなデザインで映すための「カスタムCSS」を作ります。右のプレビューでメッセージを送りながら確かめられます。すべてブラウザの中だけで処理され、入力した内容がどこかに送られることはありません。マシュマロでいただいた要望から生まれたツールです。</p>
 </header>
@@ -174,7 +186,7 @@
         <div class="row"><label>並び順</label><select data-bind="list.order" data-options="ORDERS"></select></div>
         <div class="row"><label>すき間</label>
           <span class="with-value"><input type="range" data-bind="list.gap" min="0" max="30" step="1"><output data-out="list.gap" data-fmt="px"></output></span></div>
-        <p class="desc">新しいものから数えて、この件数だけ映します。窓に入りきらない古いメッセージは端で切れます。<b>システムメッセージ</b>は、HP や SAN を変えたとき（<code>:HP-2</code> など）にココフォリアが自動で出す「[ キャラ名 ] HP : 12 → 10」のようなお知らせです。どのタブを映すかは OBS で選びます（「OBS・保存」タブを参照）。</p>
+        <p class="desc" data-i18n>新しいものから数えて、この件数だけ映します。窓に入りきらない古いメッセージは端で切れます。<b>システムメッセージ</b>は、HP や SAN を変えたとき（<code>:HP-2</code> など）にココフォリアが自動で出す「[ キャラ名 ] HP : 12 → 10」のようなお知らせです。どのタブを映すかは OBS で選びます（「OBS・保存」タブを参照）。</p>
       </fieldset>
 
       <fieldset>
@@ -255,7 +267,7 @@
           <div class="row" data-show="members.ringW!=0"><label>縁取りの色</label>
             <span class="color-alpha"><input type="color" data-bind="members.ringColor"><input type="range" data-bind="members.ringAlpha" min="0" max="1" step="0.01"><output data-out="members.ringAlpha" data-fmt="pct"></output></span></div>
         </div>
-        <p class="desc">ココフォリアは、参加者を決めた秘匿タブを開いているときだけ、そのタブに参加しているユーザーのアイコンを出します（メインなどでは出ません）。アイコンはキャラではなく、<b>ユーザーのプロフィール画像</b>です。間隔をマイナスにすると重なります。揃え方と文字の色・フォントは見出しと同じです。</p>
+        <p class="desc" data-i18n>ココフォリアは、参加者を決めた秘匿タブを開いているときだけ、そのタブに参加しているユーザーのアイコンを出します（メインなどでは出ません）。アイコンはキャラではなく、<b>ユーザーのプロフィール画像</b>です。間隔をマイナスにすると重なります。揃え方と文字の色・フォントは見出しと同じです。</p>
       </fieldset>
     </section>
 
@@ -354,7 +366,7 @@
         <div class="row" data-show="text.outline=stroke"><label>ふちの太さ</label>
           <span class="with-value"><input type="range" data-bind="text.outlineW" min="1" max="5" step="0.5"><output data-out="text.outlineW" data-fmt="px"></output></span></div>
         <p class="desc">「長い文」を 1 以上にすると、その行数より長いメッセージは「…」で切ります。ふちどりは名前とダイスの結果にもかかります。</p>
-        <p class="desc" data-show="title.font=pc|name.font=pc|text.font=pc|result.font=pc">「名前で指定（PCのフォント）」では、この PC に入れたフォントが使えます。<b>OBS を動かす PC にも同じフォントが入っている必要があります。</b></p>
+        <p class="desc" data-show="title.font=pc|name.font=pc|text.font=pc|result.font=pc" data-i18n>「名前で指定（PCのフォント）」では、この PC に入れたフォントが使えます。<b>OBS を動かす PC にも同じフォントが入っている必要があります。</b></p>
       </fieldset>
 
       <fieldset>
@@ -377,7 +389,7 @@
           <label class="check"><input type="checkbox" data-bind="result.glow"> 成功・失敗を光らせる</label>
           <label class="check"><input type="checkbox" data-bind="result.flash"> 出た瞬間に明るく光る</label>
         </span></div>
-        <p class="desc">色の分け方はココフォリアと同じです。<b>成功</b>は「成功」「スペシャル」など、<b>失敗</b>は「失敗」と、ほかの人のシークレットダイス。成否のないロール（<code>2D6</code> など）は<b>その他</b>になります。クリティカルとファンブルは、それぞれ成功・失敗の色です。</p>
+        <p class="desc" data-i18n>色の分け方はココフォリアと同じです。<b>成功</b>は「成功」「スペシャル」など、<b>失敗</b>は「失敗」と、ほかの人のシークレットダイス。成否のないロール（<code>2D6</code> など）は<b>その他</b>になります。クリティカルとファンブルは、それぞれ成功・失敗の色です。</p>
       </fieldset>
     </section>
 
@@ -398,9 +410,9 @@
             <span class="with-value"><input type="range" data-bind="motion.scrollWait" min="0" max="10" step="0.5"><output data-out="motion.scrollWait" data-fmt="sec"></output></span></div>
           <div class="row"><label>流しきる時間</label>
             <span class="with-value"><input type="range" data-bind="motion.scrollDur" min="5" max="120" step="1"><output data-out="motion.scrollDur" data-fmt="sec"></output></span></div>
-          <p class="desc warn-text" data-show="list.count!=1">流れるのは、映す件数が <b>1 件</b>のときだけです（「メッセージ」タブ）。</p>
+          <p class="desc warn-text" data-show="list.count!=1" data-i18n>流れるのは、映す件数が <b>1 件</b>のときだけです（「メッセージ」タブ）。</p>
         </div>
-        <p class="desc">日記や手紙のような長い本文を、先頭から読ませてから末尾まで流します。窓に収まる本文は動きません。<br>
+        <p class="desc" data-i18n>日記や手紙のような長い本文を、先頭から読ませてから末尾まで流します。窓に収まる本文は動きません。<br>
           <b>1 件表示のときだけ</b>動き、窓はソースいっぱいになります。オンにすると件数と窓の大きさを合わせます。<br>
           長さに合わせて速さは変わらないので、長い本文ほど速く流れます。「時間がたったら消す」は、流しきってから数えます。</p>
       </fieldset>
@@ -414,7 +426,7 @@
           <div class="row"><label>消える速さ</label>
             <span class="with-value"><input type="range" data-bind="motion.exitDur" min="0.2" max="3" step="0.1"><output data-out="motion.exitDur" data-fmt="sec"></output></span></div>
         </div>
-        <p class="desc">ダイス速報のように、振ったときだけ出したい場合に。消えたメッセージのぶん、ほかのメッセージが詰まります。<br>
+        <p class="desc" data-i18n>ダイス速報のように、振ったときだけ出したい場合に。消えたメッセージのぶん、ほかのメッセージが詰まります。<br>
           OBS でソースを読み込み直すと、消えていたメッセージもいったん出てから消えます。<br>
           プレビューでは設定を変えるたびに動きが最初からやり直されるので、全部消えたら右のボタンでメッセージを送ってください。</p>
       </fieldset>
@@ -434,13 +446,13 @@
           <input type="text" id="chatUrl" readonly aria-label="ブラウザソースに入れるURL" placeholder="ルームの URL を入れると、ここに出ます">
           <button type="button" id="copyUrl">URL をコピー</button>
         </span></div>
-        <p class="desc">ココフォリアでルームを開いたときの URL を貼ると、OBS に入れるチャット画面の URL（末尾が <code>/chat</code>）を作ります。書き出す CSS の先頭にも書き込まれます。</p>
+        <p class="desc" data-i18n>ココフォリアでルームを開いたときの URL を貼ると、OBS に入れるチャット画面の URL（末尾が <code>/chat</code>）を作ります。書き出す CSS の先頭にも書き込まれます。</p>
       </fieldset>
 
       <fieldset>
         <legend>OBS の「対話」</legend>
         <div class="row"><label></label><label class="check"><input type="checkbox" data-bind="hover.tabs"> マウスを乗せたときだけタブを出す</label></div>
-        <p class="desc">オンにすると、OBS でソースを右クリック →「対話」を開き、窓の上にマウスを乗せたときだけココフォリアのタブが出ます。<b>秘匿タブを映すときは、ここでタブを選びます。</b>配信の画面には出ません。</p>
+        <p class="desc" data-i18n>オンにすると、OBS でソースを右クリック →「対話」を開き、窓の上にマウスを乗せたときだけココフォリアのタブが出ます。<b>秘匿タブを映すときは、ここでタブを選びます。</b>配信の画面には出ません。</p>
       </fieldset>
 
       <fieldset>
@@ -537,38 +549,38 @@
     <div class="note">
       <h2>OBS での設定</h2>
       <ol>
-        <li>ソースを追加 →「ブラウザ」。URL にチャット画面の URL（<b>末尾が /chat</b>）を入れます：<br><code>https://ccfolia.com/rooms/{ルームID}/chat</code><br>ブラウザのアドレス欄にあるルームの URL ではありません。上の「OBS のブラウザソースに入れる URL」からコピーできます。</li>
-        <li>幅と高さに、上に出ている <b>ブラウザソースの大きさ</b> を入れます。</li>
+        <li data-i18n>ソースを追加 →「ブラウザ」。URL にチャット画面の URL（<b>末尾が /chat</b>）を入れます：<br><code>https://ccfolia.com/rooms/{ルームID}/chat</code><br>ブラウザのアドレス欄にあるルームの URL ではありません。上の「OBS のブラウザソースに入れる URL」からコピーできます。</li>
+        <li data-i18n>幅と高さに、上に出ている <b>ブラウザソースの大きさ</b> を入れます。</li>
         <li>「カスタム CSS」の中身を全部消して、コピーした CSS を貼り付けます。</li>
-        <li>何も映らないときや秘匿タブを映すときは、ココフォリアへのログインが必要です。いったん URL を <code>https://ccfolia.com/</code> にして、ソースを右クリック →「対話」でログインしてから、URL を元に戻します（1 回やれば覚えています）。<b>「対話」ではログインだけして、ルームには入らないでください。</b></li>
-        <li>メイン以外のタブは、「対話」を開いて窓にマウスを乗せ、出てきたタブから選びます。<b>タブの選択は保存されない</b>ので、OBS を起動し直したら選び直してください。</li>
+        <li data-i18n>何も映らないときや秘匿タブを映すときは、ココフォリアへのログインが必要です。いったん URL を <code>https://ccfolia.com/</code> にして、ソースを右クリック →「対話」でログインしてから、URL を元に戻します（1 回やれば覚えています）。<b>「対話」ではログインだけして、ルームには入らないでください。</b></li>
+        <li data-i18n>メイン以外のタブは、「対話」を開いて窓にマウスを乗せ、出てきたタブから選びます。<b>タブの選択は保存されない</b>ので、OBS を起動し直したら選び直してください。</li>
       </ol>
       <h2>うまく映らないとき</h2>
       <ul>
-        <li><b>ルームの背景・スクリーンパネル・駒・拡大縮小のボタンまで映る</b> → チャット画面ではなく、ルームの画面を開いています。ソースのプロパティで、URL の末尾が <code>/chat</code> になっているか確かめてください。「対話」の中でルームに入ってしまったときは、URL をいったん <code>https://ccfolia.com/</code> にして OK → チャット画面の URL に戻して OK で直ります。</li>
-        <li><b>何も映らない</b> → ココフォリアへのログインが必要です（上の手順 4）。</li>
-        <li><b>長い本文の先頭が見えない</b>（日記や手紙など） → 窓に収まらない分は切れます。「メッセージ」タブの<b>並び順を「新しいものを上に」</b>にすると先頭から表示されます（今度は末尾が切れます）。件数を 1 件にし、ブラウザソースの高さを上げて、文字を小さくすると収まりやすくなります。</li>
+        <li data-i18n><b>ルームの背景・スクリーンパネル・駒・拡大縮小のボタンまで映る</b> → チャット画面ではなく、ルームの画面を開いています。ソースのプロパティで、URL の末尾が <code>/chat</code> になっているか確かめてください。「対話」の中でルームに入ってしまったときは、URL をいったん <code>https://ccfolia.com/</code> にして OK → チャット画面の URL に戻して OK で直ります。</li>
+        <li data-i18n><b>何も映らない</b> → ココフォリアへのログインが必要です（上の手順 4）。</li>
+        <li data-i18n><b>長い本文の先頭が見えない</b>（日記や手紙など） → 窓に収まらない分は切れます。「メッセージ」タブの<b>並び順を「新しいものを上に」</b>にすると先頭から表示されます（今度は末尾が切れます）。件数を 1 件にし、ブラウザソースの高さを上げて、文字を小さくすると収まりやすくなります。</li>
       </ul>
       <h2>ダイス用と秘匿チャット用を両方出すとき</h2>
       <ul>
-        <li><b>ブラウザソースは OBS の仕様で複製できません</b>（右クリックの「複製を貼り付け」は灰色のままです）。<b>「ソースを追加」→「ブラウザ」で 2 つ目を新しく作り</b>、同じチャット画面の URL を入れて、それぞれにこのツールで作った CSS を貼り付けてください。秘匿チャット用のほうだけ、「対話」で秘匿タブを選びます。</li>
+        <li data-i18n><b>ブラウザソースは OBS の仕様で複製できません</b>（右クリックの「複製を貼り付け」は灰色のままです）。<b>「ソースを追加」→「ブラウザ」で 2 つ目を新しく作り</b>、同じチャット画面の URL を入れて、それぞれにこのツールで作った CSS を貼り付けてください。秘匿チャット用のほうだけ、「対話」で秘匿タブを選びます。</li>
         <li>ログインはすべてのブラウザソースで共通なので、2 つ目で入り直す必要はありません。大きさや位置は、右クリック →「変換をコピー」→ もう一方で「変換を貼り付け」でそろえられます。</li>
         <li>秘匿タブは、そのタブに参加しているアカウント（GM など）でログインしたときだけ見えます。</li>
         <li>ブラウザソースの設定で「表示されていないときにソースをシャットダウン」「シーンがアクティブになったときにブラウザの表示を更新」をオンにすると、切り替えのたびにタブがメインに戻ります。</li>
       </ul>
       <h2>台詞（立ち絵つきのメッセージボックス）も映したいとき</h2>
       <ul>
-        <li>ココフォリアで発言したときにルーム画面の下に出る、立ち絵つきのメッセージボックスは、姉妹ツールの<a href="https://shiki365.github.io/message-box-maker/">メッセージボックスメーカー</a>で OBS 用にデザインできます。</li>
-        <li>メッセージボックスには、ダイスの結果のうち「＞ 成功」のような最後の部分しか出ません。<b>台詞はメッセージボックス、出目まで入ったダイスの結果はこのツール</b>（ひな形「ダイス速報（1件を大きく）」など）と分けて映すのがおすすめです。ブラウザソースは 2 つになりますが、ログインは共通です。</li>
+        <li data-i18n>ココフォリアで発言したときにルーム画面の下に出る、立ち絵つきのメッセージボックスは、姉妹ツールの<a href="https://shiki365.github.io/message-box-maker/">メッセージボックスメーカー</a>で OBS 用にデザインできます。</li>
+        <li data-i18n>メッセージボックスには、ダイスの結果のうち「＞ 成功」のような最後の部分しか出ません。<b>台詞はメッセージボックス、出目まで入ったダイスの結果はこのツール</b>（ひな形「ダイス速報（1件を大きく）」など）と分けて映すのがおすすめです。ブラウザソースは 2 つになりますが、ログインは共通です。</li>
       </ul>
       <h2>PC に入れたフォントを使うとき</h2>
       <ul>
         <li>フォント欄で「名前で指定（PCのフォント）」を選び、フォント名を入れます。Chrome / Edge では「一覧から選ぶ」で、PC に入っているフォントを見た目で選べます（初回はフォントの使用の許可を聞かれます）。</li>
-        <li>OBS は自分の PC のフォントで表示するので、<b>OBS を動かす PC にも同じフォントを入れてください</b>。入っていないと、ふつうのゴシック体になります。</li>
+        <li data-i18n>OBS は自分の PC のフォントで表示するので、<b>OBS を動かす PC にも同じフォントを入れてください</b>。入っていないと、ふつうのゴシック体になります。</li>
         <li>漢字が入っていないフォントでは、漢字の部分だけふつうのゴシック体になります（一覧の見本の「永」で確かめられます）。</li>
       </ul>
       <h2>このツールについて</h2>
-      <p style="margin: 0">マシュマロでいただいた「ダイスウィンドウや秘匿チャットを、プレビューで確かめながらカスタマイズしたい」という声から作りました。「こんなツールがほしい」「ここが使いにくい」といった声も、<a href="https://marshmallow-qa.com/jisg2c3imbza76d">マシュマロ</a>からお気軽にどうぞ。</p>
+      <p style="margin: 0" data-i18n>マシュマロでいただいた「ダイスウィンドウや秘匿チャットを、プレビューで確かめながらカスタマイズしたい」という声から作りました。「こんなツールがほしい」「ここが使いにくい」といった声も、<a href="https://marshmallow-qa.com/jisg2c3imbza76d">マシュマロ</a>からお気軽にどうぞ。</p>
     </div>
   </div>
 </main>
@@ -577,16 +589,16 @@
 
 <footer>
   ブラウザだけで動く無料ツールです。作った CSS は自由に使えます。<br>
-  ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。<br>
+  <span data-i18n>ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。</span><br>
   <a href="https://shiki365.github.io/">ほかのツールも見る（shiki365 のツール置き場）</a> ・ <a href="https://shiki365.github.io/#contact">不具合の報告・感想</a> ・ <a href="https://marshmallow-qa.com/jisg2c3imbza76d">ほしいツールの要望（マシュマロ）</a> ・ <a href="https://sabunomisogi.booth.pm/items/8891048">開発を応援する（BOOTH）</a><br>
-  v1.10 ・ 最終更新 2026-09-25
+  <span>v1.11</span> ・ <span>最終更新</span> 2026-10-05
 </footer>
 
-<script src="presets.v1.js?v=5"></script>
-<script src="model.v1.js?v=1"></script>
-<script src="css.v1.js?v=6"></script>
-<script src="mock.v1.js?v=1"></script>
-<script src="pcfonts.v1.js?v=1"></script>
-<script src="app.v1.js?v=5"></script>
+<script src="presets.v1.js?v=6"></script>
+<script src="model.v1.js?v=2"></script>
+<script src="css.v1.js?v=7"></script>
+<script src="mock.v1.js?v=2"></script>
+<script src="pcfonts.v2.js"></script>
+<script src="app.v1.js?v=6"></script>
 </body>
 </html>
