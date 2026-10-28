@@ -1,0 +1,12 @@
+{
+  "name": "chat-window-maker-dev",
+  "private": true,
+  "description": "Checks to run before publishing (not part of the tool)",
+  "scripts": {
+    "check": "node check.js",
+    "update": "node check.js --update"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

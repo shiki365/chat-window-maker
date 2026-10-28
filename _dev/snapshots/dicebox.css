@@ -1,0 +1,383 @@
+/* ==========================================================================
+   ココフォリア → OBS  チャットウィンドウ
+   チャットウィンドウメーカーで作成（ひな形: ダイスウィンドウ（標準））
+   --------------------------------------------------------------------------
+   ■ ブラウザソースのURL
+       https://ccfolia.com/rooms/{ルームID}/chat
+       ※ 末尾が /chat の URL です。ルームの URL だと、ルームの画面（背景や駒）がそのまま映ります。
+   ■ ブラウザソースの大きさ  幅 480 / 高さ 460
+   ■ 秘匿タブなどメイン以外を映すとき
+       ソースを右クリック →「対話」→ 窓にマウスを乗せるとタブが出るので、映したいタブを選ぶ。
+       タブの選択は保存されないので、OBS を起動し直したら選び直してください。
+   ■ ダイスだけ表示・成否の色分けは OBS 31 以降で動きます。
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@700&display=swap");
+
+/* ---------- 背景を透過して、余計なものを消す ---------- */
+html, body {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+#root > div {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+::-webkit-scrollbar {
+  display: none !important;
+}
+.MuiSnackbar-root {
+  display: none !important;
+}
+
+/* ---------- 窓（ブラウザソースの中に置く箱） ---------- */
+.MuiDrawer-paper {
+  position: fixed !important;
+  left: 10px !important;
+  right: 10px !important;
+  top: auto !important;
+  bottom: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100% - 20px) !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transform: none !important;
+  visibility: visible !important;
+  z-index: 1 !important;
+  background-color: rgba(12, 14, 20, 0.7) !important;
+  background-image: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+  color: #aeb6c8 !important;
+}
+
+/* ---------- 見出し ---------- */
+.MuiDrawer-paper > div.MuiPaper-root {
+  display: none !important;
+}
+.MuiDrawer-paper > header {
+  display: block !important;
+  position: static !important;
+  order: -1 !important;
+  flex: none !important;
+  width: auto !important;
+  margin: 0 0 8px !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #cfd6e6 !important;
+  z-index: 2 !important;
+  border-bottom: 2px solid #5cc8ff !important;
+  padding-bottom: 0.3em !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child .MuiIconButton-root {
+  display: none !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child > div:nth-of-type(1) {
+  display: block !important;
+  content: "" !important;
+  flex: 0 0 0 !important;
+  height: 0 !important;
+  background: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child > div:nth-of-type(2) {
+  display: block !important;
+  content: "" !important;
+  flex: 1 1 0 !important;
+  height: 0 !important;
+  background: none !important;
+  min-width: 0.6em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+.MuiDrawer-paper > header h6 {
+  font-family: "Chakra Petch", "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-size: 0 !important;
+  font-weight: 700 !important;
+  color: #cfd6e6 !important;
+  -webkit-text-fill-color: #cfd6e6 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0 !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+}
+.MuiDrawer-paper > header h6::before {
+  content: "DICE ROLL" !important;
+  font-size: 13px !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:not(:first-child) {
+  display: none !important;
+}
+html:not(:hover) .MuiDrawer-paper > div.MuiPaper-root {
+  display: none !important;
+}
+
+/* ---------- メッセージの並び（最新の件数だけ残す） ---------- */
+.MuiDrawer-paper > [role="log"] {
+  flex: 0 1 auto !important;
+  min-height: 1px !important;
+  height: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: clip !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  background: transparent !important;
+  scrollbar-width: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+.MuiDrawer-paper > [role="log"] > :not(div) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child {
+  height: auto !important;
+  width: 100% !important;
+  position: relative !important;
+  flex: none !important;
+  margin: 0 !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div {
+  position: static !important;
+  transform: none !important;
+  width: 100% !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: -6px !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  display: none !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:nth-last-child(-n+4) {
+  display: block !important;
+}
+
+/* ---------- ダイスの結果だけ（OBS 31 以降） ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:not(:nth-last-child(-n+4 of :has(.MuiListItemText-secondary > .MuiTypography-body2))) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:nth-last-child(-n+4 of :has(.MuiListItemText-secondary > .MuiTypography-body2)) {
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  margin: 0;
+  margin-top: 6px;
+}
+
+/* ---------- 1件ぶんの箱 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > .MuiListItem-root {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  min-height: 0 !important;
+  text-align: left !important;
+  padding: 8px 12px 8px 16px !important;
+  background: rgba(16, 19, 27, 0.82) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > .MuiListItem-root > div:not(.MuiListItemAvatar-root):not(.MuiListItemText-root) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-root {
+  margin: 0 !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  display: block !important;
+  position: static !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > hr {
+  display: none !important;
+}
+
+/* ---------- ダイスの成否で箱の色を変える（OBS 31 以降） ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:has(.MuiListItemText-secondary > .css-1l6qhgm) {
+  --cw-res: #5cc8ff !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:has(.MuiListItemText-secondary > .css-1j13mke) {
+  --cw-res: #ff5c7a !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:has(.MuiListItemText-secondary > .css-ucj12) {
+  --cw-res: #e8e4da !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > .MuiListItem-root::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 4px !important;
+  pointer-events: none !important;
+  background: var(--cw-res, #8a93a8) !important;
+  border-radius: 6px 0 0 6px !important;
+}
+
+/* ---------- アイコン ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root {
+  display: block !important;
+  min-width: 0 !important;
+  width: 34px !important;
+  margin: 0 !important;
+  flex: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root > div {
+  width: 34px !important;
+  height: 34px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root > div:empty {
+  background: transparent !important;
+  border: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root .MuiAvatar-root {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+/* ---------- 名前 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-primary {
+  font-family: "Noto Sans JP", "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: none !important;
+  margin: 0 0 2px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-primary > .MuiTypography-caption {
+  display: none !important;
+}
+
+/* ---------- 本文 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary {
+  font-family: "Noto Sans JP", "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #aeb6c8 !important;
+  -webkit-text-fill-color: #aeb6c8 !important;
+  line-height: 1.55 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .MuiTypography-caption {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:has(.MuiListItemAvatar-root > div:empty) .MuiListItemText-secondary {
+  opacity: 0.75 !important;
+}
+
+/* ---------- ダイスの結果（成功・失敗・その他） ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .MuiTypography-body2 {
+  font-family: "Chakra Petch", "Yu Gothic UI","Yu Gothic","Meiryo",sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
+  display: block !important;
+  margin-top: 0.15em !important;
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-1l6qhgm {
+  color: #5cc8ff !important;
+  -webkit-text-fill-color: #5cc8ff !important;
+  text-shadow: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-1j13mke {
+  color: #ff5c7a !important;
+  -webkit-text-fill-color: #ff5c7a !important;
+  text-shadow: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-ucj12 {
+  color: #e8e4da !important;
+  -webkit-text-fill-color: #e8e4da !important;
+  text-shadow: none !important;
+}
+
+/* ---------- 出るときの動き ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  animation: cw-in-slideLeft 0.35s ease-out both;
+  transform-origin: center center;
+}
+
+/* ---------- OBS の「対話」でマウスを乗せたときだけ、タブを出す ---------- */
+html:hover .MuiDrawer-paper > div.MuiPaper-root {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #212121 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 0 !important;
+  order: -1 !important;
+}
+html:hover .MuiDrawer-paper > div.MuiPaper-root > form > :not(header) {
+  display: none !important;
+}
+@keyframes cw-in-slideLeft { from { opacity: 0; transform: translateX(40px); } }
