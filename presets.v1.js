@@ -111,7 +111,7 @@
       outline: "shadow", outlineColor: "#000000", outlineAlpha: 0.8, outlineW: 2, clamp: 0 },
     result: { font: "notosans", fontName: "", weight: 700, size: 16, newLine: true, style: "text",
       success: "#5cc8ff", failure: "#ff5c7a", neutral: "#e8e4da", glow: false, flash: false },
-    motion: { enter: "slideUp", enterDur: 0.35, exit: false, exitAfter: 12, exitDur: 0.6, scroll: false, scrollWait: 2, scrollDur: 30 },
+    motion: { enter: "slideUp", enterDur: 0.35, exit: false, exitAfter: 12, exitDur: 0.6, exitPanel: false, scroll: false, scrollWait: 2, scrollDur: 30 },
   };
 
   const DESIGNS = {
@@ -147,7 +147,8 @@
       name: { font: "shippori", size: 13, colorMode: "fixed", color: "#6b3b22", time: true, timeColor: "#3a2a1a", timeAlpha: 0.45 },
       text: { font: "shippori", weight: 500, size: 15, color: "#2e2116", lineHeight: 1.75, outline: "none" },
       result: { font: "shippori", size: 15, success: "#1f4e8a", failure: "#8a1f1f", neutral: "#4a3a2a" },
-      motion: { enter: "fade", enterDur: 0.6 },
+      // Hiding the window is ready for when "fade out" is switched on (M-013).
+      motion: { enter: "fade", enterDur: 0.6, exitPanel: true },
     },
     secretHud: {
       label: "秘匿通信（SF）", desc: "暗い画面に水色の線と走査線。「SECRET」の後ろにタブの名前を出します。",
@@ -161,7 +162,7 @@
       name: { font: "chakra", size: 13 },
       text: { font: "zenkaku", size: 14, color: "#dffbff", outline: "glow", outlineColor: "#00c8ff", outlineAlpha: 0.35 },
       result: { font: "rajdhani", size: 19, success: "#63ffa8", failure: "#ff5a78", neutral: "#dffbff", glow: true },
-      motion: { enter: "slideRight", enterDur: 0.3 },
+      motion: { enter: "slideRight", enterDur: 0.3, exitPanel: true },
     },
     simple: {
       label: "チャットログ（背景なし）", desc: "箱を出さず、ふちどりした文字だけ。画面の端に重ねても邪魔になりません。",

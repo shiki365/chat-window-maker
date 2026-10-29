@@ -68,6 +68,10 @@
   const HAS_RESULT = ":has(.MuiListItemText-secondary > .MuiTypography-body2)";
   const IS_SYSTEM = ":has(.MuiListItemAvatar-root > div:empty)";
   const hasResult = kind => `:has(.MuiListItemText-secondary > .${R[kind]})`;
+  // The messages the window shows ("dice only" / "no system messages"), as an `of S` filter; "" for all.
+  const listFilter = L => (L.diceOnly ? HAS_RESULT : L.hideSystem ? `:not(${IS_SYSTEM})` : "");
+  // A message, seen from the window (.MuiDrawer-paper).
+  const ENTRY_IN_PANEL = '> [role="log"] > div:last-child > div > div[data-index]';
 
   // ---------------------------------------------------------------- values
 
@@ -258,7 +262,7 @@
     const n = Math.max(1, Math.min(30, Math.round(L.count)));
     w.add(E, { display: "none", padding: "0", "box-sizing": "border-box", position: "relative" });
     w.add(`${E}:nth-last-child(-n+${n})`, { display: "block" });
-    const filter = L.diceOnly ? HAS_RESULT : L.hideSystem ? `:not(${IS_SYSTEM})` : "";
+    const filter = listFilter(L);
     if (filter) {
       w.comment(t(L.diceOnly ? "ダイスの結果だけ（OBS 31 以降）" : "システムメッセージを除く（OBS 31 以降）"));
       // Older OBS drops these two rules and falls back to the plain "latest N" above.
@@ -595,9 +599,35 @@
       // Fades first, then gives its space back to the other messages.
       keyframe("cw-out", `0% { opacity: 1; max-height: 1200px; } 75% { opacity: 0; max-height: 1200px; margin-top: ${px(st.list.gap)}; } 100% { opacity: 0; max-height: 0; margin-top: 0; visibility: hidden; }`);
     }
+    if (MO.exit && MO.exitPanel) panelExitRules(st, w, keyframe, exitAt);
     if (!list.length) return;
     w.comment(MO.exit ? t("出るときの動き / {sec}秒で消える", { sec: round(exitAt, 10) }) : t("出るときの動き"));
     w.add(E, { animation: list.join(", "), "transform-origin": "center center" }, ["animation", "transform-origin"]);
+  }
+
+  /**
+   * The window fades out with the newest message, and comes back when another one arrives.
+   * CSS cannot see an animation end, so the window runs its own timer of the same length. To restart
+   * it on a new message: data-index is the message's number in the whole log, so the newest shown
+   * message flips between even and odd each time one arrives, and each parity uses its own animation
+   * name (a new name starts the animation over). Every rule needs :has(), so an older OBS drops them
+   * all and keeps the window as before. :where() keeps them weaker than the "Interact" rule.
+   * The "dice only" / "no system messages" filters use :has() themselves, which cannot go inside
+   * another :has(), so this counts every message: one the window does not show also brings it back.
+   */
+  function panelExitRules(st, w, keyframe, exitAt) {
+    const MO = st.motion;
+    const newest = `${ENTRY_IN_PANEL}:nth-last-child(1 of [data-index])`;
+    const parity = digits => `:is(${digits.map(d => `[data-index$="${d}"]`).join(", ")})`;
+    const timer = name => `${name} ${round(MO.exitDur)}s ease-in ${round(exitAt, 10)}s forwards`;
+    keyframe("cw-panel-out-even", "to { opacity: 0; }");
+    keyframe("cw-panel-out-odd", "to { opacity: 0; }");
+    w.comment(t("メッセージが消えたら窓も消す（新しいメッセージで、また出る。OBS 31 以降）"));
+    w.add(`${SEL.panel}:where(:has(${newest}${parity(["0", "2", "4", "6", "8"])}))`, { animation: timer("cw-panel-out-even") }, ["animation"]);
+    w.add(`${SEL.panel}:where(:has(${newest}${parity(["1", "3", "5", "7", "9"])}))`, { animation: timer("cw-panel-out-odd") }, ["animation"]);
+    w.add(`${SEL.panel}:where(:not(:has(${newest})))`, { opacity: "0" });
+    // OBS's "Interact" window: keep it on screen while a tab is being picked.
+    w.add(`html:hover ${SEL.panel}`, { animation: "none", opacity: "1" });
   }
 
   // ---------------------------------------------------------------- build

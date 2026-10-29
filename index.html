@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <script src="i18n.v1.js"></script>
-<script src="lang.en.v1.js"></script>
-<script src="lang.ko.v1.js"></script>
+<script src="lang.en.v1.js?v=2"></script>
+<script src="lang.ko.v1.js?v=2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>チャットウィンドウメーカー | ココフォリア × OBS</title>
 <meta name="description" content="ココフォリアのダイスの結果や秘匿チャットを、OBSに好きなデザインで映すためのカスタムCSSを作るツールです。プレビューで確かめながら、窓・文字・成否の色・動きを選んでコピーするだけ。">
@@ -425,6 +425,10 @@
             <span class="with-value"><input type="range" data-bind="motion.exitAfter" min="2" max="60" step="1"><output data-out="motion.exitAfter" data-fmt="sec"></output></span></div>
           <div class="row"><label>消える速さ</label>
             <span class="with-value"><input type="range" data-bind="motion.exitDur" min="0.2" max="3" step="0.1"><output data-out="motion.exitDur" data-fmt="sec"></output></span></div>
+          <div class="row"><label></label><label class="check"><input type="checkbox" data-bind="motion.exitPanel"> メッセージが消えたら窓も消す<span class="tag31">OBS 31〜</span></label></div>
+          <p class="desc" data-i18n>窓（背景・枠・見出し）も一緒に消え、新しいメッセージが届くとまた出ます。秘匿チャットを、送ったときだけ映したいときに。<br>
+            OBS の「対話」でマウスを乗せている間は、タブを選べるように窓を出したままにします（プレビューも同じなので、確かめるときはマウスを外してください）。<br>
+            「ダイスの結果だけ」「システムメッセージを除く」と一緒に使うと、窓に映らない種類のメッセージが届いたときも、窓が出てしばらく残ります（秘匿タブにシステムメッセージは届きません）。</p>
         </div>
         <p class="desc" data-i18n>ダイス速報のように、振ったときだけ出したい場合に。消えたメッセージのぶん、ほかのメッセージが詰まります。<br>
           OBS でソースを読み込み直すと、消えていたメッセージもいったん出てから消えます。<br>
@@ -591,12 +595,12 @@
   ブラウザだけで動く無料ツールです。作った CSS は自由に使えます。<br>
   <span data-i18n>ココフォリアの画面の作りが変わると、表示が崩れることがあります。いずれのサービスとも関係のない<strong>非公式</strong>のツールです。</span><br>
   <a href="https://shiki365.github.io/">ほかのツールも見る（shiki365 のツール置き場）</a> ・ <a href="https://shiki365.github.io/#contact">不具合の報告・感想</a> ・ <a href="https://marshmallow-qa.com/jisg2c3imbza76d">ほしいツールの要望（マシュマロ）</a> ・ <a href="https://sabunomisogi.booth.pm/items/8891048">開発を応援する（BOOTH）</a><br>
-  <span>v1.11</span> ・ <span>最終更新</span> 2026-10-05
+  <span>v1.12</span> ・ <span>最終更新</span> 2026-10-30
 </footer>
 
-<script src="presets.v1.js?v=6"></script>
+<script src="presets.v1.js?v=7"></script>
 <script src="model.v1.js?v=2"></script>
-<script src="css.v1.js?v=7"></script>
+<script src="css.v1.js?v=8"></script>
 <script src="mock.v1.js?v=2"></script>
 <script src="pcfonts.v2.js"></script>
 <script src="app.v1.js?v=6"></script>
