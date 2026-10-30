@@ -1,0 +1,357 @@
+/* ==========================================================================
+   ココフォリア → OBS  チャットウィンドウ
+   チャットウィンドウメーカーで作成（ひな形: 古文書（探索記録））
+   --------------------------------------------------------------------------
+   ■ ブラウザソースのURL
+       https://ccfolia.com/rooms/{ルームID}/chat
+       ※ 末尾が /chat の URL です。ルームの URL だと、ルームの画面（背景や駒）がそのまま映ります。
+   ■ ブラウザソースの大きさ  幅 480 / 高さ 460
+   ■ 秘匿タブなどメイン以外を映すとき
+       ソースを右クリック →「対話」→ 窓にマウスを乗せるとタブが出るので、映したいタブを選ぶ。
+       タブの選択は保存されないので、OBS を起動し直したら選び直してください。
+   ■ ダイスだけ表示・成否の色分けは OBS 31 以降で動きます。
+   ========================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&display=swap");
+
+/* ---------- 背景を透過して、余計なものを消す ---------- */
+html, body {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+#root > div {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+::-webkit-scrollbar {
+  display: none !important;
+}
+.MuiSnackbar-root {
+  display: none !important;
+}
+
+/* ---------- 窓（ブラウザソースの中に置く箱） ---------- */
+.MuiDrawer-paper {
+  position: fixed !important;
+  left: 10px !important;
+  right: 10px !important;
+  top: auto !important;
+  bottom: 10px !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100% - 20px) !important;
+  margin: 0 !important;
+  padding: 14px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transform: none !important;
+  visibility: visible !important;
+  z-index: 1 !important;
+  background-color: rgba(230, 216, 184, 0.96) !important;
+  background-image: radial-gradient(ellipse at 50% 35%, rgba(255, 255, 255, 0.22), transparent 60%), radial-gradient(ellipse at center, transparent 45%, rgba(90, 55, 20, 0.32) 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.66 0 0 0 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E") !important;
+  background-size: 100% 100%, 100% 100%, 160px 160px !important;
+  border: 1px solid rgba(90, 67, 38, 0.8) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35) !important;
+  color: #2b2118 !important;
+}
+.MuiDrawer-paper::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 40 !important;
+  border-radius: inherit !important;
+  background: linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) left top / 18px 2px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) left top / 2px 18px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) right top / 18px 2px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) right top / 2px 18px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) left bottom / 18px 2px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) left bottom / 2px 18px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) right bottom / 18px 2px no-repeat, linear-gradient(rgba(90, 67, 38, 0.85), rgba(90, 67, 38, 0.85)) right bottom / 2px 18px no-repeat !important;
+}
+
+/* ---------- 見出し ---------- */
+.MuiDrawer-paper > div.MuiPaper-root {
+  display: none !important;
+}
+.MuiDrawer-paper > header {
+  display: block !important;
+  position: static !important;
+  order: -1 !important;
+  flex: none !important;
+  width: auto !important;
+  margin: 0 0 8px !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #2b2118 !important;
+  z-index: 2 !important;
+  border-bottom: 2px solid #7a1f1a !important;
+  padding-bottom: 0.3em !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child .MuiIconButton-root {
+  display: none !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child > div:nth-of-type(1) {
+  display: block !important;
+  content: "" !important;
+  flex: 0 0 0 !important;
+  height: 0 !important;
+  background: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:first-child > div:nth-of-type(2) {
+  display: block !important;
+  content: "" !important;
+  flex: 1 1 0 !important;
+  height: 0 !important;
+  background: none !important;
+  min-width: 0.6em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+.MuiDrawer-paper > header h6 {
+  font-family: "Shippori Mincho B1", "Yu Mincho","YuMincho","Hiragino Mincho ProN",serif !important;
+  font-size: 0 !important;
+  font-weight: 800 !important;
+  color: #2b2118 !important;
+  -webkit-text-fill-color: #2b2118 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0 !important;
+  flex: 0 1 auto !important;
+  margin: 0 !important;
+}
+.MuiDrawer-paper > header h6::before {
+  content: "探索記録" !important;
+  font-size: 18px !important;
+}
+.MuiDrawer-paper > header > .MuiToolbar-root:not(:first-child) {
+  display: none !important;
+}
+html:not(:hover) .MuiDrawer-paper > div.MuiPaper-root {
+  display: none !important;
+}
+
+/* ---------- メッセージの並び（最新の件数だけ残す） ---------- */
+.MuiDrawer-paper > [role="log"] {
+  flex: 0 1 auto !important;
+  min-height: 1px !important;
+  height: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: clip !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  background: transparent !important;
+  scrollbar-width: none !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+.MuiDrawer-paper > [role="log"] > :not(div) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child {
+  height: auto !important;
+  width: 100% !important;
+  position: relative !important;
+  flex: none !important;
+  margin: 0 !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div {
+  position: static !important;
+  transform: none !important;
+  width: 100% !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  margin-top: -2px !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  display: none !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:nth-last-child(-n+4) {
+  display: block !important;
+}
+
+/* ---------- システムメッセージを除く（OBS 31 以降） ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:not(:nth-last-child(-n+4 of :not(:has(.MuiListItemAvatar-root > div:empty)))) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:nth-last-child(-n+4 of :not(:has(.MuiListItemAvatar-root > div:empty))) {
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  margin: 0;
+  margin-top: 2px;
+}
+
+/* ---------- 1件ぶんの箱 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > .MuiListItem-root {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  min-height: 0 !important;
+  text-align: left !important;
+  padding: 6px 2px 6px 2px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > .MuiListItem-root > div:not(.MuiListItemAvatar-root):not(.MuiListItemText-root) {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-root {
+  margin: 0 !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  display: block !important;
+  position: static !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] > hr {
+  display: block !important;
+  margin: 3px 0 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(90, 67, 38, 0.35) !important;
+  height: 0 !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:last-child > hr {
+  display: none !important;
+}
+
+/* ---------- アイコン ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemAvatar-root {
+  display: none !important;
+}
+
+/* ---------- 名前 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-primary {
+  font-family: "Shippori Mincho B1", "Yu Mincho","YuMincho","Hiragino Mincho ProN",serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: none !important;
+  margin: 0 0 2px !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  -webkit-text-fill-color: #5a2a18 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-primary > .MuiTypography-caption {
+  display: none !important;
+}
+
+/* ---------- 本文 ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary {
+  font-family: "Shippori Mincho B1", "Yu Mincho","YuMincho","Hiragino Mincho ProN",serif !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #2b2118 !important;
+  -webkit-text-fill-color: #2b2118 !important;
+  line-height: 1.55 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  display: block !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .MuiTypography-caption {
+  display: none !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index]:has(.MuiListItemAvatar-root > div:empty) .MuiListItemText-secondary {
+  opacity: 0.75 !important;
+}
+
+/* ---------- ダイスの結果（成功・失敗・その他） ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .MuiTypography-body2 {
+  font-family: "Shippori Mincho B1", "Yu Mincho","YuMincho","Hiragino Mincho ProN",serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0.02em !important;
+  display: table !important;
+  margin-top: 0.15em !important;
+  white-space: pre-wrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: anywhere !important;
+  padding: 0.05em 0.55em 0.08em 0.3em !important;
+  border-radius: 0.35em !important;
+  margin-left: 0 !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-1l6qhgm {
+  color: #1f3f6e !important;
+  -webkit-text-fill-color: #1f3f6e !important;
+  text-shadow: none !important;
+  border: 1.5px solid #1f3f6e !important;
+  background: rgba(31, 63, 110, 0.12) !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-1j13mke {
+  color: #8a1a1a !important;
+  -webkit-text-fill-color: #8a1a1a !important;
+  text-shadow: none !important;
+  border: 1.5px solid #8a1a1a !important;
+  background: rgba(138, 26, 26, 0.12) !important;
+}
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] .MuiListItemText-secondary > .css-ucj12 {
+  color: #3b2a18 !important;
+  -webkit-text-fill-color: #3b2a18 !important;
+  text-shadow: none !important;
+  border: 1.5px solid #3b2a18 !important;
+  background: rgba(59, 42, 24, 0.12) !important;
+}
+
+/* ---------- 出るときの動き ---------- */
+.MuiDrawer-paper > [role="log"] > div:last-child > div > div[data-index] {
+  animation: cw-in-fade 0.8s ease-out both;
+  transform-origin: center center;
+}
+
+/* ---------- OBS の「対話」でマウスを乗せたときだけ、タブを出す ---------- */
+html:hover .MuiDrawer-paper > div.MuiPaper-root {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 50 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #212121 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 0 !important;
+  order: -1 !important;
+}
+html:hover .MuiDrawer-paper > div.MuiPaper-root > form > :not(header) {
+  display: none !important;
+}
+@keyframes cw-in-fade { from { opacity: 0; } }
