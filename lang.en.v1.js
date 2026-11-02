@@ -451,4 +451,11 @@ I18n.add("en", {
 
   // ---- i18n.v1.js
   "訳の誤りを知らせる": "Report a translation error",
+
+  // ---- theme.v1.js
+  "画面の明るさ": "Appearance",
+  "自動": "Auto",
+  "ダーク": "Dark",
+  "ライト": "Light",
+  "パソコンやスマホの設定に合わせる": "Follow your device's setting",
 });
