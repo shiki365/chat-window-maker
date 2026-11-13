@@ -101,6 +101,8 @@
   .tabbar button[aria-selected=true] { color: var(--fg); font-weight: 700; background: var(--panel);
                                         box-shadow: inset 0 -2px 0 var(--accent); }
   .tabbar button:focus-visible { outline-offset: -2px; }
+  /* On a phone, five short tabs fit without scrolling. */
+  @media (max-width: 480px) { .tabbar button { padding-inline: 3px; font-size: 12px; } }
 
   /* A section of the sheet: its name sits on the rule. */
   fieldset { border: 0; border-top: 1px solid var(--line); margin: 18px 0 0; padding: 2px 0 0; min-width: 0; }
